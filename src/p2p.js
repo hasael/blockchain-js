@@ -4,6 +4,9 @@ const defaults = require('dat-swarm-defaults');
 const getPort = require('get-port');
 const chain = require("./chain");
 const CronJob = require('cron').CronJob;
+const express = require("express");
+const bodyParser = require('body-parser');
+const wallet = require('./wallet');
 
 let MessageType = {
     REQUEST_BLOCK: 'requestBlock',
@@ -23,6 +26,25 @@ console.log('myPeerId: ' + myPeerId.toString('hex'));
 
 chain.createDb(myPeerId.toString('hex'));
 
+let initHttpServer = (port) => {
+    let http_port = '80' + port.toString().slice(-2);
+    let app = express();
+    app.use(bodyParser.json());
+    app.get('/blocks', (req, res) => res.send(JSON.stringify( chain.blockchain )));
+    app.get('/getBlock', (req, res) => {
+        let blockIndex = req.query.index;
+        res.send(chain.blockchain[blockIndex]);
+    });
+    app.get('/getDBBlock', (req, res) => {
+        let blockIndex = req.query.index;
+        chain.getDbBlock(blockIndex, res);
+    });
+    app.get('/getWallet', (req, res) => {
+        res.send(wallet.initWallet());
+    });
+    app.listen(http_port, () => console.log('Listening http on port: ' + http_port));
+};
+
 const config = defaults({
     id: myPeerId,
 });
@@ -32,7 +54,7 @@ const swarm = Swarm(config);
 
 (async () => {
     const port = await getPort();
-
+    initHttpServer(port);
     swarm.listen(port);
     console.log('Listening port: ' + port);
 
@@ -41,6 +63,7 @@ const swarm = Swarm(config);
         const seq = connSeq;
         const peerId = info.id.toString('hex');
         console.log(`Connected #${seq} to peer: ${peerId}`);
+
         if (info.initiator) {
             try {
                 conn.setKeepAlive(true, 600);

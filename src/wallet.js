@@ -24,6 +24,6 @@ const generatePrivateKey = () => {
     const privateKey = keyPair.getPrivate();
     return privateKey.toString(16);
 };
-let wallet = this;
-let retVal = wallet.initWallet();
-console.log(JSON.stringify(retVal));
+// let wallet = this;
+// let retVal = wallet.initWallet();
+// console.log(JSON.stringify(retVal));

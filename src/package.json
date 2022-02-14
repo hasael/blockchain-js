@@ -13,7 +13,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async": "^3.2.3",
+    "babel-polyfill": "^6.26.0",
     "body-parser": "^1.19.1",
+    "colors": "^1.4.0",
     "cron": "^1.8.2",
     "crypto": "^1.0.1",
     "crypto-js": "^4.1.1",
@@ -22,7 +25,11 @@
     "elliptic": "^6.5.4",
     "express": "^4.17.2",
     "get-port": "^5.1.1",
+    "handlebars": "^4.7.7",
     "level": "^7.0.1",
-    "moment": "^2.29.1"
+    "lodash": "^4.17.21",
+    "moment": "^2.29.1",
+    "nopt": "^5.0.0",
+    "update-notifier": "^5.1.0"
   }
 }

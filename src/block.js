@@ -10,6 +10,7 @@ exports.BlockHeader = class BlockHeader {
         this.previousBlockHeader = previousBlockHeader; // previous block header hash - A SHA256(SHA256()) hash of previous block’s header. Ensures that previous block cannot be changed as this block needs to be changed as well.
         this.merkleRoot = merkleRoot; // merkle root hash - a merkle tree is a binary tree which holds all the hashed pairs of the tree.
         this.time = time; // a Unix epoch time when the miner started hashing the header.
+        this.nounce = nounce;
     }
 };
 

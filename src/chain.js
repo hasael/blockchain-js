@@ -12,10 +12,18 @@ let createDb = (peerId) => {
     let dir = __dirname + '/db/' + peerId;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
-        db = level(dir);
-        storeBlock(getGenesisBlock());
+    }
+    db = level(dir);
+    storeBlock(getGenesisBlock());
+}
+
+let deleteDb = (peerId) => {
+    let dir = __dirname + '/db/' + peerId;
+    if (fs.existsSync(dir)) {
+        fs.rm(dir);
     }
 }
+
 let getGenesisBlock = () => {
     let blockHeader = new BlockHeader(1, null, "0x1bc3300000000000000000000000000000000000000000000", moment().unix(), "0x181b8330", '1DAC2B7C');
     return new Block(blockHeader, 0, null);
@@ -30,7 +38,7 @@ let addBlock = (newBlock) => {
             storeBlock(newBlock);
             blockchain.push(newBlock);
         }
-        else{
+        else {
             console.log('Invalid block: ' + newBlock);
         }
     }
@@ -44,10 +52,12 @@ let getBlock = (index) => {
 }
 
 let storeBlock = (newBlock) => {
-    db.put(newBlock.index, JSON.stringify(newBlock), function (err) {
-        if (err) return console.log('Ooops!', err) // some kind of I/O error
-        console.log('--- Inserting block index: ' + newBlock.index);
-    })
+    if (db) {
+        db.put(newBlock.index, JSON.stringify(newBlock), function (err) {
+            if (err) return console.log('Ooops!', err) // some kind of I/O error
+            console.log('--- Inserting block index: ' + newBlock.index);
+        })
+    }
 }
 
 let getDbBlock = (index, res) => {
@@ -61,24 +71,37 @@ const generateNextBlock = (txns, nounce) => {
     const prevBlock = getLatestBlock(),
         prevMerkleRoot = prevBlock.blockHeader.merkleRoot;
     nextIndex = prevBlock.index + 1,
-        nextTime = moment().unix(),
-        nextMerkleRoot = CryptoJS.SHA256(1, prevMerkleRoot, nextTime, nounce).toString();
+        nextTime = moment().unix();
+
+    var sha256 = CryptoJS.algo.SHA256.create();
+    sha256.update('1');
+    sha256.update(prevMerkleRoot.toString());
+    sha256.update(nextTime.toString());
+    sha256.update(nounce.toString());
+    sha256.update(JSON.stringify(txns));
+    const nextMerkleRoot = sha256.finalize().toString();
+
 
     const blockHeader = new BlockHeader(1, prevMerkleRoot, nextMerkleRoot, nextTime, null, nounce);
     const newBlock = new Block(blockHeader, nextIndex, txns);
-    blockchain.push(newBlock);
     return newBlock;
 };
 
 
 validateBlock = (block) => {
-    const previousHash = block.blockHeader.merkleRoot;
+    const previousHash = block.blockHeader.previousBlockHeader;
     const time = block.blockHeader.time;
     const nounce = block.blockHeader.nounce;
-    const merkleRoot = CryptoJS.SHA256(1, previousHash, time, nounce).toString();
+    const txns = block.txns;
+    const merkleRoot = CryptoJS.algo.SHA256.create()
+        .update('1')
+        .update(previousHash.toString())
+        .update(time.toString())
+        .update(nounce.toString())
+        .update(JSON.stringify(txns))
+        .finalize().toString();
     const index = block.index;
     const lastIndexHash = getBlock(index - 1).blockHeader.merkleRoot;
-
     return block.blockHeader.merkleRoot == merkleRoot && lastIndexHash == previousHash;
 }
 
@@ -91,7 +114,11 @@ validateChain = () => {
     }
 }
 
-const blockchain = [getGenesisBlock()];
+let clear = () => {
+    blockchain = [getGenesisBlock()];
+}
+
+let blockchain = [getGenesisBlock()];
 exports.blockchain = blockchain;
 if (typeof exports != 'undefined') {
     exports.addBlock = addBlock;
@@ -100,5 +127,8 @@ if (typeof exports != 'undefined') {
     exports.getLatestBlock = getLatestBlock;
     exports.generateNextBlock = generateNextBlock;
     exports.createDb = createDb;
+    exports.deleteDb = deleteDb;
     exports.getDbBlock = getDbBlock;
+    exports.getGenesisBlock = getGenesisBlock;
+    exports.clear = clear;
 }

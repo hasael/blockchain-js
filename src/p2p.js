@@ -30,7 +30,7 @@ let initHttpServer = (port) => {
     let http_port = '80' + port.toString().slice(-2);
     let app = express();
     app.use(bodyParser.json());
-    app.get('/blocks', (req, res) => res.send(JSON.stringify( chain.blockchain )));
+    app.get('/blocks', (req, res) => res.send(JSON.stringify(chain.blockchain)));
     app.get('/getBlock', (req, res) => {
         let blockIndex = req.query.index;
         res.send(chain.blockchain[blockIndex]);
@@ -208,7 +208,7 @@ const job = new CronJob('30 * * * * *', function () {
     console.log(JSON.stringify(registeredMiners));
     if (registeredMiners[index] === myPeerId.toString('hex')) {
         console.log('-----------create next block -----------------');
-        let newBlock = chain.generateNextBlock(null);
+        let newBlock = chain.generateNextBlock(null, index * 13);
         chain.addBlock(newBlock);
         console.log(JSON.stringify(newBlock));
         writeMessageToPeers(MessageType.RECEIVE_NEW_BLOCK, newBlock);

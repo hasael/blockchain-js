@@ -1,3 +1,5 @@
+const { chain } = require("lodash");
+
 let Block = require("./block.js").Block,
     BlockHeader = require("./block.js").BlockHeader,
     moment = require("moment"),
@@ -24,8 +26,13 @@ let getLatestBlock = () => blockchain[blockchain.length - 1];
 let addBlock = (newBlock) => {
     let prevBlock = getLatestBlock();
     if (prevBlock.index < newBlock.index && newBlock.blockHeader.previousBlockHeader === prevBlock.blockHeader.merkleRoot) {
-        storeBlock(newBlock);
-        blockchain.push(newBlock);
+        if (validateBlock(newBlock)) {
+            storeBlock(newBlock);
+            blockchain.push(newBlock);
+        }
+        else{
+            console.log('Invalid block: ' + newBlock);
+        }
     }
 }
 
@@ -50,18 +57,39 @@ let getDbBlock = (index, res) => {
     });
 }
 
-const generateNextBlock = (txns) => {
+const generateNextBlock = (txns, nounce) => {
     const prevBlock = getLatestBlock(),
         prevMerkleRoot = prevBlock.blockHeader.merkleRoot;
     nextIndex = prevBlock.index + 1,
         nextTime = moment().unix(),
-        nextMerkleRoot = CryptoJS.SHA256(1, prevMerkleRoot, nextTime).toString();
+        nextMerkleRoot = CryptoJS.SHA256(1, prevMerkleRoot, nextTime, nounce).toString();
 
-    const blockHeader = new BlockHeader(1, prevMerkleRoot, nextMerkleRoot, nextTime);
+    const blockHeader = new BlockHeader(1, prevMerkleRoot, nextMerkleRoot, nextTime, null, nounce);
     const newBlock = new Block(blockHeader, nextIndex, txns);
     blockchain.push(newBlock);
     return newBlock;
 };
+
+
+validateBlock = (block) => {
+    const previousHash = block.blockHeader.merkleRoot;
+    const time = block.blockHeader.time;
+    const nounce = block.blockHeader.nounce;
+    const merkleRoot = CryptoJS.SHA256(1, previousHash, time, nounce).toString();
+    const index = block.index;
+    const lastIndexHash = getBlock(index - 1).blockHeader.merkleRoot;
+
+    return block.blockHeader.merkleRoot == merkleRoot && lastIndexHash == previousHash;
+}
+
+validateChain = () => {
+    for (let i = 0; i < blockchain.length; i++) {
+        const element = blockchain[i];
+        if (!validateBlock(element)) {
+            return false;
+        }
+    }
+}
 
 const blockchain = [getGenesisBlock()];
 exports.blockchain = blockchain;

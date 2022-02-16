@@ -208,7 +208,7 @@ const job = new CronJob('30 * * * * *', function () {
     console.log(JSON.stringify(registeredMiners));
     if (registeredMiners[index] === myPeerId.toString('hex')) {
         console.log('-----------create next block -----------------');
-        let newBlock = chain.generateNextBlock(null, index * 13);
+        let newBlock = chain.mineBlock();
         chain.addBlock(newBlock);
         console.log(JSON.stringify(newBlock));
         writeMessageToPeers(MessageType.RECEIVE_NEW_BLOCK, newBlock);

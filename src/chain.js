@@ -6,7 +6,9 @@ let Block = require("./block.js").Block,
     CryptoJS = require("crypto-js"),
     level = require('level'),
     fs = require('fs'),
-    db;;
+    db;
+
+let difficulty = 1;
 
 let createDb = (peerId) => {
     let dir = __dirname + '/db/' + peerId;
@@ -67,20 +69,31 @@ let getDbBlock = (index, res) => {
     });
 }
 
-const generateNextBlock = (txns, nounce) => {
-    const prevBlock = getLatestBlock(),
+const mineBlock = () => {
+
+    let nextMerkleRoot = "111111111111";
+    let nounce = 0;
+    let prevMerkleRoot;
+    let nextIndex;
+    let nextTime;
+    let txns = null;
+    
+    do {
+        nounce++;
+        const prevBlock = getLatestBlock();
         prevMerkleRoot = prevBlock.blockHeader.merkleRoot;
-    nextIndex = prevBlock.index + 1,
+
+        nextIndex = prevBlock.index + 1;
         nextTime = moment().unix();
 
-    var sha256 = CryptoJS.algo.SHA256.create();
-    sha256.update('1');
-    sha256.update(prevMerkleRoot.toString());
-    sha256.update(nextTime.toString());
-    sha256.update(nounce.toString());
-    sha256.update(JSON.stringify(txns));
-    const nextMerkleRoot = sha256.finalize().toString();
-
+        var sha256 = CryptoJS.algo.SHA256.create();
+        sha256.update('1');
+        sha256.update(prevMerkleRoot.toString());
+        sha256.update(nextTime.toString());
+        sha256.update(nounce.toString());
+        sha256.update(JSON.stringify(txns));
+        nextMerkleRoot = sha256.finalize().toString();
+    } while (nextMerkleRoot.substring(0, difficulty) !== Array(difficulty + 1).join("0"))
 
     const blockHeader = new BlockHeader(1, prevMerkleRoot, nextMerkleRoot, nextTime, null, nounce);
     const newBlock = new Block(blockHeader, nextIndex, txns);
@@ -113,7 +126,9 @@ validateChain = () => {
         }
     }
 }
-
+let setDifficulty = (d) => {
+    difficulty = d;
+}
 let clear = () => {
     blockchain = [getGenesisBlock()];
 }
@@ -125,10 +140,11 @@ if (typeof exports != 'undefined') {
     exports.getBlock = getBlock;
     exports.blockchain = blockchain;
     exports.getLatestBlock = getLatestBlock;
-    exports.generateNextBlock = generateNextBlock;
+    exports.mineBlock = mineBlock;
     exports.createDb = createDb;
     exports.deleteDb = deleteDb;
     exports.getDbBlock = getDbBlock;
     exports.getGenesisBlock = getGenesisBlock;
     exports.clear = clear;
+    exports.setDifficulty = setDifficulty;
 }

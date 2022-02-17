@@ -5,10 +5,11 @@ describe('blockchain', function () {
     describe('block', function () {
         beforeEach(function (done) {
             chain.setDifficulty(0);
+            chain.setMineTimeout(0);
             chain.clear();
             done();
         });
-      
+
         it('should be able to add', function () {
             let newBlock = chain.mineBlock();
             chain.addBlock(newBlock);
@@ -26,6 +27,15 @@ describe('blockchain', function () {
             let newBlock = chain.mineBlock();
             chain.addBlock(newBlock);
             assert.equal(chain.getLatestBlock().blockHeader.merkleRoot.substring(0, difficulty), '00');
+        });
+        it('should have timeout for block mining', function () {
+            let newBlock = chain.mineBlock();
+            chain.setMineTimeout(1000);
+            chain.addBlock(newBlock);
+            assert.equal(chain.getLatestBlock().index, 1);
+            let secondBlock = chain.mineBlock();
+            assert.equal(secondBlock, undefined);
+            assert.equal(chain.getLatestBlock().index, 1);
         });
     });
 });

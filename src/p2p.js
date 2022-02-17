@@ -209,9 +209,14 @@ const job = new CronJob('30 * * * * *', function () {
     if (registeredMiners[index] === myPeerId.toString('hex')) {
         console.log('-----------create next block -----------------');
         let newBlock = chain.mineBlock();
-        chain.addBlock(newBlock);
-        console.log(JSON.stringify(newBlock));
-        writeMessageToPeers(MessageType.RECEIVE_NEW_BLOCK, newBlock);
+        if (newBlock) {
+            chain.addBlock(newBlock);
+            console.log(JSON.stringify(newBlock));
+            writeMessageToPeers(MessageType.RECEIVE_NEW_BLOCK, newBlock);
+        }
+        else{
+            console.log('Cannot mine block yet!')
+        }
         console.log(JSON.stringify(chain.blockchain));
         console.log('-----------create next block -----------------');
     }

@@ -1,10 +1,15 @@
 let EC = require('elliptic').ec,
     fs = require('fs');
 
-const ec = new EC('secp256k1'),
-    privateKeyLocation = __dirname + '/wallet/private_key';
+const ec = new EC('secp256k1');
+let privateKeyLocation = __dirname + '/wallet/private_key';
 
-exports.initWallet = () => {
+exports.initWallet = (peerId) => {
+    let dir = privateKeyLocation = __dirname + '/wallet/' + peerId;
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
+    privateKeyLocation = dir + '/private.key';
     let privateKey;
     if (fs.existsSync(privateKeyLocation)) {
         const buffer = fs.readFileSync(privateKeyLocation, 'utf8');

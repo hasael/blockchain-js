@@ -40,7 +40,7 @@ let initHttpServer = (port) => {
         chain.getDbBlock(blockIndex, res);
     });
     app.get('/getWallet', (req, res) => {
-        res.send(wallet.initWallet());
+        res.send(wallet.initWallet(myPeerId.toString('hex')));
     });
     app.listen(http_port, () => console.log('Listening http on port: ' + http_port));
 };

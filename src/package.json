@@ -31,6 +31,7 @@
     "mocha": "^9.2.0",
     "moment": "^2.29.1",
     "nopt": "^5.0.0",
+    "simple-hashtable": "^1.0.1",
     "update-notifier": "^5.1.0"
   }
 }

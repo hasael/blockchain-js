@@ -1,5 +1,6 @@
 var assert = require('assert');
 const chain = require("../chain");
+const wallet = require('../wallet');
 
 describe('blockchain', function () {
     describe('block', function () {
@@ -17,7 +18,7 @@ describe('blockchain', function () {
         });
         it('should validate block to add', function () {
             let newBlock = chain.mineBlock();
-            newBlock.txns = { data: 'data', add: 'tampered' };
+            newBlock.blockHeader.time = 1
             chain.addBlock(newBlock);
             assert.equal(chain.getLatestBlock().index, 0);
         });
@@ -37,5 +38,19 @@ describe('blockchain', function () {
             assert.equal(secondBlock, undefined);
             assert.equal(chain.getLatestBlock().index, 1);
         });
+    });
+    describe('wallet', function () {
+        beforeEach(function (done) {
+            wallet.initWallet();
+            done();
+        });
+
+        it('should calculate balance', function () {
+            let trx = wallet.createFirstTrx();
+            wallet.updateTrx(trx);
+            let balance = wallet.getBalance();
+            assert.equal(balance, trx.output.value);
+        });
+        
     });
 });

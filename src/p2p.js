@@ -12,7 +12,8 @@ let MessageType = {
     REQUEST_BLOCK: 'requestBlock',
     RECEIVE_NEXT_BLOCK: 'receiveNextBlock',
     REQUEST_ALL_REGISTER_MINERS: 'requestAllRegisterMiners',
-    REGISTER_MINER: 'registerMiner'
+    REGISTER_MINER: 'registerMiner',
+    RECEIVE_TRANSACTION: 'receiveTransaction'
 };
 
 const peers = {};
@@ -103,6 +104,16 @@ const swarm = Swarm(config);
                     writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: nextBlockIndex });
                     console.log('-----------RECEIVE_NEXT_BLOCK-------------');
                     break;
+                case MessageType.RECEIVE_TRANSACTION:
+                    console.log('-----------RECEIVE_TRANSACTION-------------');
+                    const trx = message.data;
+                    chain.addTrx(JSON.parse(JSON.stringify(trx)));
+                    wallet.updateTrx(trX);
+                    transactions.put(trx.hash, trx);
+
+                    console.log(JSON.stringify(chain.blockchain));
+                    console.log('-----------RECEIVE_TRANSACTION-END-------------');
+                    break;
                 case MessageType.REQUEST_ALL_REGISTER_MINERS:
                     console.log('-----------REQUEST_ALL_REGISTER_MINERS------------- ' + message.to);
                     writeMessageToPeers(MessageType.REGISTER_MINER, registeredMiners);
@@ -158,13 +169,22 @@ setTimeout(function () {
 }, 5000);
 
 setTimeout(function () {
-    registeredMiners.push(myPeerId.toString('hex'));
-    console.log('----------Register my miner --------------');
-    console.log(registeredMiners);
-    writeMessageToPeers(MessageType.REGISTER_MINER, registeredMiners);
-    console.log('---------- Register my miner --------------');
+    if (!registeredMiners.includes(myPeerId.toString('hex'))) {
+        registeredMiners.push(myPeerId.toString('hex'));
+        console.log('----------Register my miner --------------');
+        console.log(registeredMiners);
+        wallet.initWallet(myPeerId.toString('hex'));
+        writeMessageToPeers(MessageType.REGISTER_MINER, registeredMiners);
+        console.log('---------- Register my miner --------------');
+    }
 }, 7000);
 
+function createTransaction(trx) {
+    console.log('----------Send my transaction --------------');
+    chain.addTrx(trx);
+    writeMessageToPeers(MessageType.RECEIVE_TRANSACTION, trx);
+    console.log('----------Send my transaction --------------');
+}
 
 function writeMessageToPeers(type, data) {
     for (let id in peers) {
@@ -212,9 +232,11 @@ const job = new CronJob('30 * * * * *', function () {
         if (newBlock) {
             chain.addBlock(newBlock);
             console.log(JSON.stringify(newBlock));
+            const trx = wallet.createFirstTrx()
             writeMessageToPeers(MessageType.RECEIVE_NEW_BLOCK, newBlock);
+            createTransaction(trx);
         }
-        else{
+        else {
             console.log('Cannot mine block yet!')
         }
         console.log(JSON.stringify(chain.blockchain));

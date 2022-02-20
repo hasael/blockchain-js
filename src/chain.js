@@ -9,7 +9,7 @@ let Block = require("./block.js").Block,
     db;
 
 let difficulty = 1;
-let mineTimeout = 100;
+let mineTimeout = 1;
 let lastBlockMinedTime = moment().unix();
 
 let createDb = (peerId) => {
@@ -46,8 +46,19 @@ let addBlock = (newBlock) => {
             }
         }
         else {
-            console.log('Invalid block: ' + newBlock);
+            console.log('Invalid block: ' + JSON.stringify(newBlock));
         }
+    }
+}
+
+let addTrx = (trx) => {
+    for (i = 1; i < blockchain.length; i++) {
+        const block = blockchain[i];
+        if(block.txns.length < 20 && !block.txns.find(t => t.hash == trx.hash)){
+            block.txns.push(trx);
+            break;
+        }
+
     }
 }
 
@@ -81,7 +92,7 @@ const mineBlock = () => {
         let prevMerkleRoot;
         let nextIndex;
         let nextTime;
-        let txns = null;
+        let txns = [];
 
         do {
             nounce++;
@@ -96,7 +107,6 @@ const mineBlock = () => {
             sha256.update(prevMerkleRoot.toString());
             sha256.update(nextTime.toString());
             sha256.update(nounce.toString());
-            sha256.update(JSON.stringify(txns));
             nextMerkleRoot = sha256.finalize().toString();
         } while (nextMerkleRoot.substring(0, difficulty) !== Array(difficulty + 1).join("0"))
 
@@ -108,7 +118,7 @@ const mineBlock = () => {
 
 
 validateBlock = (block) => {
-    if(block.index == 0 && block.txns == null){
+    if (block.index == 0 && block.txns == null) {
         return true;
     }
     const previousHash = block.blockHeader.previousBlockHeader;
@@ -120,7 +130,6 @@ validateBlock = (block) => {
         .update(previousHash.toString())
         .update(time.toString())
         .update(nounce.toString())
-        .update(JSON.stringify(txns))
         .finalize().toString();
     const index = block.index;
     const lastIndexHash = getBlock(index - 1).blockHeader.merkleRoot;
@@ -167,4 +176,5 @@ if (typeof exports != 'undefined') {
     exports.clear = clear;
     exports.setDifficulty = setDifficulty;
     exports.setMineTimeout = setMineTimeout;
+    exports.addTrx = addTrx;
 }

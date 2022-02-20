@@ -38,30 +38,42 @@ const getPublicKey = () => {
     return key.getPublic().encode('hex');
 }
 
+const getUtxos = () => {
+    let retUtxos = [];
+    for (let index = 0; index < utxos.values().length; index++) {
+        const element = utxos.values()[index];
+        if (element.output.receiver == CryptoJS.SHA256(getPublicKey()).toString()) {
+            retUtxos.push(element);
+        }
+    }
+    return retUtxos;
+}
+
 exports.createFirstTrx = () => {
-    const receiver = CryptoJS.algo.SHA256.create(getPublicKey()).finalize().toString();
+    const receiver = CryptoJS.SHA256(getPublicKey()).toString();
     const value = 10;
-    return new trx.Transaction(moment().unix(), {}, new trx.TrxOutput(receiver, value));
+    return new trx.Transaction(moment().unix(), new trx.TrxInput(null, null, 'hash'), new trx.TrxOutput(receiver, value));
 }
 
 exports.updateTrx = (trx) => {
     if (!transactions.containsKey(trx.hash)) {
         transactions.put(trx.hash, trx);
+        previousTrxInputs.push(trx.input.previousTrx);
     }
     if ((trx.input.previousTrx) && !utxos.isEmpty() && utxos.containsKey(trx.input.previousTrx)) {
         utxos.remove(trx.input.previousTrx);
     }
-    previousTrxInputs.push(trx.input.previousTrx);
+
 
     let found = false;
     previousTrxInputs.forEach((element, i, arr) => {
-        if (!utxos.isEmpty() && utxos.containsKey(element)) {
+        if (element != undefined && !utxos.isEmpty() && utxos.containsKey(element)) {
             utxos.remove(element);
             found = true;
         }
     });
 
-    if (!found && (utxos.isEmpty() || !utxos.containsKey(trx.input.previousTrx))) {
+    if (!found && trx.input.previousTrx != undefined && (utxos.isEmpty() || !utxos.containsKey(trx.input.previousTrx))) {
         utxos.put(trx.hash, trx);
     }
 
@@ -72,13 +84,26 @@ exports.getBalance = () => {
 
     for (let index = 0; index < utxos.values().length; index++) {
         const element = utxos.values()[index];
-        if (element.output.receiver == CryptoJS.algo.SHA256.create(getPublicKey()).finalize().toString()) {
+        if (element.output.receiver == CryptoJS.SHA256(getPublicKey()).toString()) {
             balance += element.output.value;
         }
     }
     return balance;
 }
 
+exports.createTrx = (to, value) => {
+    let trxs = [];
+    const receiver = CryptoJS.SHA256(to).toString();
+    const self = CryptoJS.SHA256(getPublicKey()).toString();
+    const utxo = getUtxos()[0];
+    if (value < this.getBalance()) {
+
+        trxs.push(new trx.Transaction(moment().unix(), new trx.TrxInput(null, null, utxo.hash), new trx.TrxOutput(receiver, value)));
+        trxs.push(new trx.Transaction(moment().unix(), new trx.TrxInput(null, null, utxo.hash), new trx.TrxOutput(self, this.getBalance() - value)));
+    }
+
+    return trxs;
+}
 
 const generatePrivateKey = () => {
     const keyPair = ec.genKeyPair();

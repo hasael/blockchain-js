@@ -41,7 +41,7 @@ describe('blockchain', function () {
     });
     describe('wallet', function () {
         beforeEach(function (done) {
-            wallet.initWallet();
+            wallet.initWallet('test-1');
             done();
         });
 
@@ -51,6 +51,21 @@ describe('blockchain', function () {
             let balance = wallet.getBalance();
             assert.equal(balance, trx.output.value);
         });
-        
+
+        it('should send trx', function () {
+            let trx = wallet.createFirstTrx();
+            let trxValue = 2;
+            wallet.updateTrx(trx);
+            let balance = wallet.getBalance();
+            assert.equal(balance, trx.output.value);
+
+            let trxs = wallet.createTrx('to', trxValue);
+            wallet.updateTrx(trxs[0]);
+            wallet.updateTrx(trxs[1]);
+
+            let newbalance = wallet.getBalance();
+            assert.equal(newbalance, balance - trxValue);
+        });
+
     });
 });

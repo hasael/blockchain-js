@@ -1,4 +1,7 @@
 const { chain } = require("lodash");
+const EC = require('elliptic').ec;
+const SimpleHashTable = require('simple-hashtable');
+const ec = new EC('secp256k1');
 
 let Block = require("./block.js").Block,
     BlockHeader = require("./block.js").BlockHeader,
@@ -11,6 +14,10 @@ let Block = require("./block.js").Block,
 let difficulty = 1;
 let mineTimeout = 1;
 let lastBlockMinedTime = moment().unix();
+
+var utxos = new SimpleHashTable();
+var transactions = new SimpleHashTable();
+var previousTrxInputs = [];
 
 let createDb = (peerId) => {
     let dir = __dirname + '/db/' + peerId;
@@ -52,6 +59,13 @@ let addBlock = (newBlock) => {
 }
 
 let addTrx = (trx) => {
+    if (!validateTrx(trx)) {
+        console.log('invalid transaction');
+        return;
+    }
+
+    updateTrx(trx);
+
     for (i = 1; i < blockchain.length; i++) {
         const block = blockchain[i];
         if(block.txns.length < 20 && !block.txns.find(t => t.hash == trx.hash)){
@@ -60,6 +74,54 @@ let addTrx = (trx) => {
         }
 
     }
+}
+
+let updateTrx = (trx) => {
+
+    if (!transactions.containsKey(trx.hash)) {
+        transactions.put(trx.hash, trx);
+        previousTrxInputs.push(trx.input.previousTrx);
+    }
+    if ((trx.input.previousTrx) && !utxos.isEmpty() && utxos.containsKey(trx.input.previousTrx)) {
+        utxos.remove(trx.input.previousTrx);
+    }
+
+
+    let found = false;
+    previousTrxInputs.forEach((element, i, arr) => {
+        if (element != undefined && !utxos.isEmpty() && utxos.containsKey(element)) {
+            utxos.remove(element);
+            found = true;
+        }
+    });
+
+    if (!found && trx.input.previousTrx != undefined && (utxos.isEmpty() || !utxos.containsKey(trx.input.previousTrx))) {
+        utxos.put(trx.hash, trx);
+    }
+
+}
+
+validateTrx = (trx) => {
+    if (trx.input.previousTrx == 'coinbase') {
+        return true;
+    }
+    try {
+        const key = ec.keyFromPublic(trx.input.publicKey, 'hex');
+        const signature = trx.input.signature;
+        const prevTrx = transactions.get(trx.input.previousTrx);
+        return key.verify(JSON.stringify(prevTrx), toByteArray(signature));
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
+
+function toByteArray(hexString) {
+    var result = [];
+    for (var i = 0; i < hexString.length; i += 2) {
+        result.push(parseInt(hexString.substr(i, 2), 16));
+    }
+    return result;
 }
 
 let getBlock = (index) => {
@@ -177,4 +239,5 @@ if (typeof exports != 'undefined') {
     exports.setDifficulty = setDifficulty;
     exports.setMineTimeout = setMineTimeout;
     exports.addTrx = addTrx;
+    exports.utxos = utxos;
 }

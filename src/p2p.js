@@ -108,7 +108,6 @@ const swarm = Swarm(config);
                     console.log('-----------RECEIVE_TRANSACTION-------------');
                     const trx = message.data;
                     chain.addTrx(JSON.parse(JSON.stringify(trx)));
-                    wallet.updateTrx(trX);
                     transactions.put(trx.hash, trx);
 
                     console.log(JSON.stringify(chain.blockchain));

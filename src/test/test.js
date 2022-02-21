@@ -40,51 +40,55 @@ describe('blockchain', function () {
             assert.equal(chain.getLatestBlock().index, 1);
         });
     });
-});
-describe('wallet', function () {
-    beforeEach(function (done) {
-        wallet.initWallet(crypto.randomBytes(32).toString('hex'));
-        done();
+
+    describe('transaction', function () {
+        beforeEach(function (done) {
+            wallet.initWallet(crypto.randomBytes(32).toString('hex'));
+            chain.setDifficulty(0);
+            chain.setMineTimeout(0);
+            chain.clear();
+            done();
+        });
+
+        it('should calculate balance', function () {
+            let trx = wallet.createFirstTrx();
+            chain.addTrx(trx);
+            let balance = wallet.getBalance(chain.utxos);
+            assert.equal(balance, trx.output.value);
+        });
+
+        it('should send trx', function () {
+            let trx = wallet.createFirstTrx();
+            let trxValue = 2;
+            chain.addTrx(trx);
+            let balance = wallet.getBalance(chain.utxos);
+            assert.equal(balance, trx.output.value);
+
+            let trxs = wallet.createTrx('to', trxValue, chain.utxos);
+            chain.addTrx(trxs[0]);
+            chain.addTrx(trxs[1]);
+
+            let newbalance = wallet.getBalance(chain.utxos);
+            assert.equal(newbalance, balance - trxValue);
+        });
+
+        it('should not send invalid trx', function () {
+            let trx = wallet.createFirstTrx();
+            let trxValue = 2;
+            chain.addTrx(trx);
+            let balance = wallet.getBalance(chain.utxos);
+            assert.equal(balance, trx.output.value);
+
+            let trxs = wallet.createTrx('to', trxValue, chain.utxos);
+
+            trxs[0].input.signature = trxs[0].input.signature + '1';
+            trxs[1].input.signature = trxs[1].input.signature + '1';
+            chain.addTrx(trxs[0]);
+            chain.addTrx(trxs[1]);
+
+            let newbalance = wallet.getBalance(chain.utxos);
+            assert.equal(newbalance, balance);
+        });
+
     });
-
-    it('should calculate balance', function () {
-        let trx = wallet.createFirstTrx();
-        wallet.updateTrx(trx);
-        let balance = wallet.getBalance();
-        assert.equal(balance, trx.output.value);
-    });
-
-    it('should send trx', function () {
-        let trx = wallet.createFirstTrx();
-        let trxValue = 2;
-        wallet.updateTrx(trx);
-        let balance = wallet.getBalance();
-        assert.equal(balance, trx.output.value);
-
-        let trxs = wallet.createTrx('to', trxValue);
-        wallet.updateTrx(trxs[0]);
-        wallet.updateTrx(trxs[1]);
-
-        let newbalance = wallet.getBalance();
-        assert.equal(newbalance, balance - trxValue);
-    });
-
-    it('should not send invalid trx', function () {
-        let trx = wallet.createFirstTrx();
-        let trxValue = 2;
-        wallet.updateTrx(trx);
-        let balance = wallet.getBalance();
-        assert.equal(balance, trx.output.value);
-
-        let trxs = wallet.createTrx('to', trxValue);
-
-        trxs[0].input.signature = trxs[0].input.signature + '1';
-        trxs[1].input.signature = trxs[1].input.signature + '1';
-        wallet.updateTrx(trxs[0]);
-        wallet.updateTrx(trxs[1]);
-
-        let newbalance = wallet.getBalance();
-        assert.equal(newbalance, balance);
-    });
-
 });

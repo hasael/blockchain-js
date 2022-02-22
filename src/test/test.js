@@ -1,8 +1,8 @@
 var assert = require('assert');
 const chain = require("../chain");
-const wallet = require('../wallet');
+const Wallet = require('../wallet').Wallet;
 const crypto = require('crypto');
-
+let wallet = null;
 describe('blockchain', function () {
     describe('block', function () {
         beforeEach(function (done) {
@@ -43,7 +43,8 @@ describe('blockchain', function () {
 
     describe('transaction', function () {
         beforeEach(function (done) {
-            wallet.initWallet(crypto.randomBytes(32).toString('hex'));
+
+            wallet = new Wallet(crypto.randomBytes(32).toString('hex'));
             chain.setDifficulty(0);
             chain.setMineTimeout(0);
             chain.clear();

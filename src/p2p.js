@@ -6,7 +6,9 @@ const chain = require("./chain");
 const CronJob = require('cron').CronJob;
 const express = require("express");
 const bodyParser = require('body-parser');
-const wallet = require('./wallet');
+let Wallet = require('./wallet').Wallet;
+
+
 
 let MessageType = {
     REQUEST_BLOCK: 'requestBlock',
@@ -23,6 +25,7 @@ let registeredMiners = [];
 let lastBlockMinedBy = null;
 
 const myPeerId = crypto.randomBytes(32);
+let myWallet = new Wallet(myPeerId.toString('hex'));
 console.log('myPeerId: ' + myPeerId.toString('hex'));
 
 chain.createDb(myPeerId.toString('hex'));
@@ -41,7 +44,7 @@ let initHttpServer = (port) => {
         chain.getDbBlock(blockIndex, res);
     });
     app.get('/getWallet', (req, res) => {
-        res.send(wallet.initWallet(myPeerId.toString('hex')));
+        res.send(myWallet.publicKey);
     });
     app.listen(http_port, () => console.log('Listening http on port: ' + http_port));
 };
@@ -172,7 +175,6 @@ setTimeout(function () {
         registeredMiners.push(myPeerId.toString('hex'));
         console.log('----------Register my miner --------------');
         console.log(registeredMiners);
-        wallet.initWallet(myPeerId.toString('hex'));
         writeMessageToPeers(MessageType.REGISTER_MINER, registeredMiners);
         console.log('---------- Register my miner --------------');
     }
@@ -231,7 +233,7 @@ const job = new CronJob('30 * * * * *', function () {
         if (newBlock) {
             chain.addBlock(newBlock);
             console.log(JSON.stringify(newBlock));
-            const trx = wallet.createFirstTrx()
+            const trx = myWallet.createFirstTrx()
             writeMessageToPeers(MessageType.RECEIVE_NEW_BLOCK, newBlock);
             createTransaction(trx);
         }

@@ -25,10 +25,11 @@ let registeredMiners = [];
 let lastBlockMinedBy = null;
 
 const myPeerId = crypto.randomBytes(32);
-let myWallet = new Wallet(myPeerId.toString('hex'));
-console.log('myPeerId: ' + myPeerId.toString('hex'));
+const strPeerId = myPeerId.toString('hex');
+let myWallet = new Wallet(strPeerId);
+console.log('myPeerId: ' + strPeerId);
 
-chain.createDb(myPeerId.toString('hex'));
+chain.createDb(strPeerId);
 
 let initHttpServer = (port) => {
     let http_port = '80' + port.toString().slice(-2);
@@ -77,12 +78,19 @@ const swarm = Swarm(config);
         }
 
         conn.on('data', data => {
-            let message = JSON.parse(data);
+            let message = null;
+            try {
+                message = JSON.parse(data)
+            } catch (error) {
+                console.error(`Could not parse ${data}`)
+                throw error;
+            }
+
             console.log('----------- Received Message start -------------');
             console.log(
                 'from: ' + peerId.toString('hex'),
                 'to: ' + peerId.toString(message.to),
-                'my: ' + myPeerId.toString('hex'),
+                'my: ' + strPeerId,
                 'type: ' + JSON.stringify(message.type)
             );
             console.log('----------- Received Message end -------------');
@@ -111,8 +119,6 @@ const swarm = Swarm(config);
                     console.log('-----------RECEIVE_TRANSACTION-------------');
                     const trx = message.data;
                     chain.addTrx(JSON.parse(JSON.stringify(trx)));
-                    transactions.put(trx.hash, trx);
-
                     console.log(JSON.stringify(chain.blockchain));
                     console.log('-----------RECEIVE_TRANSACTION-END-------------');
                     break;
@@ -130,7 +136,7 @@ const swarm = Swarm(config);
                     console.log('-----------REGISTER_MINER------------- ' + message.to);
                     break;
                 case MessageType.RECEIVE_NEW_BLOCK:
-                    if (message.to === myPeerId.toString('hex') && message.from !== myPeerId.toString('hex')) {
+                    if (message.to === strPeerId && message.from !== strPeerId) {
                         console.log('-----------RECEIVE_NEW_BLOCK------------- ' + message.to);
                         chain.addBlock(JSON.parse(JSON.stringify(message.data)));
                         console.log(JSON.stringify(chain.blockchain));
@@ -171,8 +177,8 @@ setTimeout(function () {
 }, 5000);
 
 setTimeout(function () {
-    if (!registeredMiners.includes(myPeerId.toString('hex'))) {
-        registeredMiners.push(myPeerId.toString('hex'));
+    if (!registeredMiners.includes(strPeerId)) {
+        registeredMiners.push(strPeerId);
         console.log('----------Register my miner --------------');
         console.log(registeredMiners);
         writeMessageToPeers(MessageType.REGISTER_MINER, registeredMiners);
@@ -227,7 +233,7 @@ const job = new CronJob('30 * * * * *', function () {
     lastBlockMinedBy = registeredMiners[index];
     console.log('-- REQUESTING NEW BLOCK FROM: ' + registeredMiners[index] + ', index: ' + index);
     console.log(JSON.stringify(registeredMiners));
-    if (registeredMiners[index] === myPeerId.toString('hex')) {
+    if (registeredMiners[index] === strPeerId) {
         console.log('-----------create next block -----------------');
         let newBlock = chain.mineBlock();
         if (newBlock) {

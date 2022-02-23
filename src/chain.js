@@ -186,7 +186,6 @@ validateBlock = (block) => {
     const previousHash = block.blockHeader.previousBlockHeader;
     const time = block.blockHeader.time;
     const nounce = block.blockHeader.nounce;
-    const txns = block.txns;
     const merkleRoot = CryptoJS.algo.SHA256.create()
         .update('1')
         .update(previousHash.toString())

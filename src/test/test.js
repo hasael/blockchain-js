@@ -2,7 +2,6 @@ var assert = require('assert');
 const chain = require("../chain");
 const Wallet = require('../wallet').Wallet;
 const crypto = require('crypto');
-let wallet = null;
 describe('blockchain', function () {
     describe('block', function () {
         beforeEach(function (done) {
@@ -43,8 +42,6 @@ describe('blockchain', function () {
 
     describe('transaction', function () {
         beforeEach(function (done) {
-
-            wallet = new Wallet(crypto.randomBytes(32).toString('hex'));
             chain.setDifficulty(0);
             chain.setMineTimeout(0);
             chain.clear();
@@ -52,6 +49,7 @@ describe('blockchain', function () {
         });
 
         it('should calculate balance', function () {
+            let wallet = new Wallet(crypto.randomBytes(32).toString('hex'));
             let trx = wallet.createFirstTrx();
             chain.addTrx(trx);
             let balance = wallet.getBalance(chain.utxos);
@@ -59,28 +57,35 @@ describe('blockchain', function () {
         });
 
         it('should send trx', function () {
+            let wallet = new Wallet(crypto.randomBytes(32).toString('hex'));
+            let wallet2 = new Wallet(crypto.randomBytes(32).toString('hex'));
+
             let trx = wallet.createFirstTrx();
             let trxValue = 2;
             chain.addTrx(trx);
             let balance = wallet.getBalance(chain.utxos);
             assert.equal(balance, trx.output.value);
 
-            let trxs = wallet.createTrx('to', trxValue, chain.utxos);
+            let trxs = wallet.createTrx(wallet2.publicKey, trxValue, chain.utxos);
             chain.addTrx(trxs[0]);
             chain.addTrx(trxs[1]);
 
             let newbalance = wallet.getBalance(chain.utxos);
+            let balance2 = wallet2.getBalance(chain.utxos);
             assert.equal(newbalance, balance - trxValue);
+            assert.equal(balance2, trxValue);
         });
 
         it('should not send invalid trx', function () {
+            let wallet = new Wallet(crypto.randomBytes(32).toString('hex'));
+            let wallet2 = new Wallet(crypto.randomBytes(32).toString('hex'));
             let trx = wallet.createFirstTrx();
             let trxValue = 2;
             chain.addTrx(trx);
             let balance = wallet.getBalance(chain.utxos);
             assert.equal(balance, trx.output.value);
 
-            let trxs = wallet.createTrx('to', trxValue, chain.utxos);
+            let trxs = wallet.createTrx(wallet2.publicKey, trxValue, chain.utxos);
 
             trxs[0].input.signature = trxs[0].input.signature + '1';
             trxs[1].input.signature = trxs[1].input.signature + '1';
@@ -88,7 +93,9 @@ describe('blockchain', function () {
             chain.addTrx(trxs[1]);
 
             let newbalance = wallet.getBalance(chain.utxos);
+            let balance2 = wallet2.getBalance(chain.utxos);
             assert.equal(newbalance, balance);
+            assert.equal(balance2, 0);
         });
 
     });

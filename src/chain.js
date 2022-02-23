@@ -47,6 +47,7 @@ exports.BlockChain = class BlockChain {
         else
             return null;
     }
+
     addTrx(trx) {
         if (!this.validateTrx(trx)) {
             console.log('invalid transaction');
@@ -85,7 +86,7 @@ exports.BlockChain = class BlockChain {
 
     #canMine() {
         const currentTime = moment().unix();
-        return (currentTime - this.lastBlockMinedTime) >= this.mineTimeout && this.validateChain(this.blockchain);
+        return (currentTime - this.lastBlockMinedTime) >= this.mineTimeout && this.validateChain();
     }
 
     mineBlock() {
@@ -126,7 +127,7 @@ exports.BlockChain = class BlockChain {
         }
     }
 
-    validateChain(blockchain) {
+    validateChain() {
         for (let i = 0; i < this.blockchain.length; i++) {
             const element = this.blockchain[i];
             if (!validateBlock(element, this.getBlock(i - 1))) {
@@ -144,7 +145,17 @@ exports.BlockChain = class BlockChain {
             const key = ec.keyFromPublic(trx.input.publicKey, 'hex');
             const signature = trx.input.signature;
             const prevTrx = this.transactions.get(trx.input.previousTrx);
-            return key.verify(JSON.stringify(prevTrx), toByteArray(signature));
+
+            let found = 0;
+            for (let index = 0; index < this.transactions.values().length; index++) {
+                const element = this.transactions.values()[index];
+                if (element.input.previousTrx == trx.input.previousTrx) {
+                    found++;
+                }
+
+            }
+
+            return found <= 2 && key.verify(JSON.stringify(prevTrx), toByteArray(signature));
         } catch (error) {
             console.log(error);
             return false;

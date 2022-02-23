@@ -1,22 +1,18 @@
 var assert = require('assert');
-const chain = require("../chain");
+const BlockChain = require("../chain").BlockChain;
 const Wallet = require('../wallet').Wallet;
 const crypto = require('crypto');
 describe('blockchain', function () {
     describe('block', function () {
-        beforeEach(function (done) {
-            chain.setDifficulty(0);
-            chain.setMineTimeout(0);
-            chain.clear();
-            done();
-        });
 
         it('should be able to add', function () {
+            let chain = new BlockChain(0, 0, crypto.randomBytes(32).toString('hex'));
             let newBlock = chain.mineBlock();
             chain.addBlock(newBlock);
             assert.equal(chain.getLatestBlock().index, 1);
         });
         it('should validate block to add', function () {
+            let chain = new BlockChain(0, 0, crypto.randomBytes(32).toString('hex'));
             let newBlock = chain.mineBlock();
             newBlock.blockHeader.time = 1
             chain.addBlock(newBlock);
@@ -24,14 +20,15 @@ describe('blockchain', function () {
         });
         it('should mine block with the correct difficulty', function () {
             let difficulty = 2;
-            chain.setDifficulty(difficulty);
+            let chain = new BlockChain(difficulty, 0, crypto.randomBytes(32).toString('hex'));
             let newBlock = chain.mineBlock();
             chain.addBlock(newBlock);
             assert.equal(chain.getLatestBlock().blockHeader.merkleRoot.substring(0, difficulty), '00');
         });
         it('should have timeout for block mining', function () {
+
+            let chain = new BlockChain(0, 1000, crypto.randomBytes(32).toString('hex'));
             let newBlock = chain.mineBlock();
-            chain.setMineTimeout(1000);
             chain.addBlock(newBlock);
             assert.equal(chain.getLatestBlock().index, 1);
             let secondBlock = chain.mineBlock();
@@ -41,14 +38,9 @@ describe('blockchain', function () {
     });
 
     describe('transaction', function () {
-        beforeEach(function (done) {
-            chain.setDifficulty(0);
-            chain.setMineTimeout(0);
-            chain.clear();
-            done();
-        });
 
         it('should calculate balance', function () {
+            let chain = new BlockChain(0, 0, crypto.randomBytes(32).toString('hex'));
             let wallet = new Wallet(crypto.randomBytes(32).toString('hex'));
             let trx = wallet.createFirstTrx();
             chain.addTrx(trx);
@@ -57,6 +49,7 @@ describe('blockchain', function () {
         });
 
         it('should send trx', function () {
+            let chain = new BlockChain(0, 0, crypto.randomBytes(32).toString('hex'));
             let wallet = new Wallet(crypto.randomBytes(32).toString('hex'));
             let wallet2 = new Wallet(crypto.randomBytes(32).toString('hex'));
 
@@ -77,6 +70,7 @@ describe('blockchain', function () {
         });
 
         it('should not send invalid trx', function () {
+            let chain = new BlockChain(0, 0, crypto.randomBytes(32).toString('hex'));
             let wallet = new Wallet(crypto.randomBytes(32).toString('hex'));
             let wallet2 = new Wallet(crypto.randomBytes(32).toString('hex'));
             let trx = wallet.createFirstTrx();

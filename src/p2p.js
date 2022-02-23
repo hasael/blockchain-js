@@ -2,10 +2,11 @@ const crypto = require('crypto');
 const Swarm = require('discovery-swarm');
 const defaults = require('dat-swarm-defaults');
 const getPort = require('get-port');
-const chain = require("./chain");
+
 const CronJob = require('cron').CronJob;
 const express = require("express");
 const bodyParser = require('body-parser');
+let BlockChain = require("./chain").BlockChain;
 let Wallet = require('./wallet').Wallet;
 
 
@@ -26,10 +27,9 @@ let lastBlockMinedBy = null;
 
 const myPeerId = crypto.randomBytes(32);
 const strPeerId = myPeerId.toString('hex');
+let chain = new BlockChain(2, 1000, strPeerId);
 let myWallet = new Wallet(strPeerId);
 console.log('myPeerId: ' + strPeerId);
-
-chain.createDb(strPeerId);
 
 let initHttpServer = (port) => {
     let http_port = '80' + port.toString().slice(-2);
@@ -38,11 +38,7 @@ let initHttpServer = (port) => {
     app.get('/blocks', (req, res) => res.send(JSON.stringify(chain.blockchain)));
     app.get('/getBlock', (req, res) => {
         let blockIndex = req.query.index;
-        res.send(chain.blockchain[blockIndex]);
-    });
-    app.get('/getDBBlock', (req, res) => {
-        let blockIndex = req.query.index;
-        chain.getDbBlock(blockIndex, res);
+        res.send(chain.getBlock(blockIndex));
     });
     app.get('/getWallet', (req, res) => {
         res.send(myWallet.publicKey);

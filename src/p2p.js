@@ -108,12 +108,7 @@ let writeSocket;
                 }
 
                 console.log('----------- Received Message start -------------');
-                console.log(
-                    // 'from: ' + peerId.toString('hex'),
-                    //'to: ' + peerId.toString(message.to),
-                    //'my: ' + strPeerId,
-                    'type: ' + JSON.stringify(msg.type)
-                );
+                console.log(JSON.stringify(msg));
                 console.log('----------- Received Message end -------------');
 
                 onMessage(msg);

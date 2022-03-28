@@ -10,8 +10,6 @@ let Wallet = require('./wallet').Wallet;
 const net = require('net');
 
 
-
-
 let chunks = [];
 
 let MessageType = {
@@ -22,7 +20,7 @@ let MessageType = {
     RECEIVE_TRANSACTION: 'receiveTransaction'
 };
 
-const peers = {};
+let peers = [];
 let connSeq = 0;
 let registeredMiners = [];
 let lastBlockMinedBy = null;
@@ -48,22 +46,15 @@ let initHttpServer = (port) => {
     app.listen(http_port, () => console.log('Listening http on port: ' + http_port));
 };
 
-//const config = defaults({
-//    id: myPeerId,
-//});
-
-
-let writeSocket;
-
 (async () => {
     const port = await getPort();
+    peers.push('127.0.0.1');
     const server = net.createServer((socket) => {
         // 'connection' listener.
         console.log('client connected');
         socket.on('end', () => {
             console.log('client disconnected');
         });
-        socket.write('hello\r\n');
         socket.pipe(socket);
 
     }).on('error', (err) => {
@@ -80,18 +71,14 @@ let writeSocket;
 
 
     server.on('connection', (socket) => {
-        socket.on('data', onRead)
-    });
 
-    writeSocket = net.connect({
-        port: 30080,
-        writable: true,
+        socket.on('data', data => onRead(socket.remoteAddress, data))
     });
 
     initHttpServer(port);
     console.log('Listening port: ' + port);
 
-    let onRead = (data) => {
+    let onRead = (from, data) => {
         let strData = String(data);
         const msgs = strData.split("<end>")
         console.log('data: ' + strData);
@@ -111,20 +98,20 @@ let writeSocket;
                 console.log(JSON.stringify(msg));
                 console.log('----------- Received Message end -------------');
 
-                onMessage(msg);
+                onMessage(from, msg);
             }
         });
 
     };
 
-    let onMessage = (message) => {
+    let onMessage = (from, message) => {
         switch (message.type) {
             case MessageType.REQUEST_BLOCK:
                 console.log('-----------REQUEST_BLOCK-------------');
                 let requestedIndex = (JSON.parse(JSON.stringify(message.data))).index;
                 let requestedBlock = chain.getBlock(requestedIndex);
                 if (requestedBlock)
-                    writeMessageToPeerToId(peerId.toString('hex'), MessageType.RECEIVE_NEXT_BLOCK, requestedBlock);
+                    writeMessageToPeerToId(peerId.toString('hex'), MessageType.RECEIVE_NEXT_BLOCK, requestedBlock, from);
                 else
                     console.log('No block found @ index: ' + requestedIndex);
                 console.log('-----------REQUEST_BLOCK-------------');
@@ -168,41 +155,42 @@ let writeSocket;
                 break;
         }
     }
-
-    let onDisconnect = () => {
-
-        console.log(`Connection closed, peerId: ${strPeerId}`);
-        if (peers[peerId].seq === seq) {
-            delete peers[peerId];
-            console.log('--- registeredMiners before: ' + JSON.stringify(registeredMiners));
-            let index = registeredMiners.indexOf(peerId);
-            if (index > -1)
-                registeredMiners.splice(index, 1);
-            console.log('--- registeredMiners end: ' + JSON.stringify(registeredMiners));
-        }
-
-    };
-
-    let onConnect = (conn, info) => {
-        const seq = connSeq;
-        const peerId = info.id.toString('hex');
-        console.log(`Connected #${seq} to peer: ${peerId}`);
-
-        if (info.initiator) {
-            try {
-                conn.setKeepAlive(true, 600);
-            } catch (exception) {
-                console.log('exception', exception);
+    /*
+        let onDisconnect = () => {
+    
+            console.log(`Connection closed, peerId: ${strPeerId}`);
+            if (peers[peerId].seq === seq) {
+                delete peers[peerId];
+                console.log('--- registeredMiners before: ' + JSON.stringify(registeredMiners));
+                let index = registeredMiners.indexOf(peerId);
+                if (index > -1)
+                    registeredMiners.splice(index, 1);
+                console.log('--- registeredMiners end: ' + JSON.stringify(registeredMiners));
             }
-        }
-        //node.broadcast.write('HEYO! I\'m here');
-        /*if (!peers[peerId]) {
-            peers[peerId] = {}
-        }
-        peers[peerId].conn = conn;
-        peers[peerId].seq = seq;*/
-        connSeq++
-    };
+    
+        };
+    
+        let onConnect = (conn, info) => {
+            const seq = connSeq;
+            const peerId = info.id.toString('hex');
+            console.log(`Connected #${seq} to peer: ${peerId}`);
+    
+            if (info.initiator) {
+                try {
+                    conn.setKeepAlive(true, 600);
+                } catch (exception) {
+                    console.log('exception', exception);
+                }
+            }
+            //node.broadcast.write('HEYO! I\'m here');
+            //if (!peers[peerId]) {
+           //     peers[peerId] = {}
+            //}
+            //peers[peerId].conn = conn;
+            //peers[peerId].seq = seq;
+            connSeq++
+        };
+        */
 })();
 
 setTimeout(function () {
@@ -233,31 +221,30 @@ function createTransaction(trx) {
 }
 
 function writeMessageToPeers(type, data) {
-    //for (let id in peers) {
-    console.log('-------- writeMessageToPeers start -------- ');
-    console.log('type: ' + type + ', to: all');
-    console.log('data: ' + JSON.stringify(data));
-    console.log('-------- writeMessageToPeers end ----------- ');
-    sendMessage(type, JSON.stringify(data));
-    // }
+    peers.forEach(id => {
+        console.log('-------- writeMessageToPeers start -------- ');
+        console.log('type: ' + type + ', to: ' + id);
+        console.log('data: ' + JSON.stringify(data));
+        console.log('-------- writeMessageToPeers end ----------- ');
+        sendMessage(type, JSON.stringify(data), id);
+    })
 };
 
 function writeMessageToPeerToId(toId, type, data) {
-    //for (let id in peers) {
-    //if (id === toId) {
-    console.log('-------- writeMessageToPeerToId start -------- ');
-    console.log('type: ' + type + ', to: ' + toId);
-    console.log('data: ' + JSON.stringify(data));
-    console.log('-------- writeMessageToPeerToId end ----------- ');
-    sendMessage(type, JSON.stringify(data));
-    //  }
-    //}
+    peers.filter(id == toId).forEach(id => {
+        console.log('-------- writeMessageToPeerToId start -------- ');
+        console.log('type: ' + type + ', to: ' + toId);
+        console.log('data: ' + JSON.stringify(data));
+        console.log('-------- writeMessageToPeerToId end ----------- ');
+        sendMessage(type, JSON.stringify(data), id);
+    }
+    );
 };
 
-function sendMessage(type, data) {
+function sendMessage(type, data, nodeIp) {
     let msg = JSON.stringify(
         {
-            to: 'all',
+            to: nodeIp,
             from: strPeerId,
             type: type,
             data: data
@@ -265,8 +252,16 @@ function sendMessage(type, data) {
     );
 
     chunks.push(msg);
+    let writeSocket = net.connect({
+        host: nodeIp,
+        port: 30080,
+        writable: true,
+    });
+
+
     if (writeSocket) {
         writeSocket.write(msg + '<end>');
+        writeSocket.end();
     }
 };
 

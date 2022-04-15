@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 const getPort = require('get-port');
 
-var smoke = require('smokesignal');
 const CronJob = require('cron').CronJob;
 const express = require("express");
 const bodyParser = require('body-parser');
@@ -15,7 +14,9 @@ let chunks = [];
 let MessageType = {
     REQUEST_BLOCK: 'requestBlock',
     RECEIVE_NEXT_BLOCK: 'receiveNextBlock',
-    RECEIVE_TRANSACTION: 'receiveTransaction'
+    RECEIVE_TRANSACTION: 'receiveTransaction',
+    REQUEST_PEERS: 'requestPeers',
+    RECEIVE_PEERS: 'receivePeers'
 };
 
 let peers = [];
@@ -93,9 +94,21 @@ let initHttpServer = (port) => {
                 let requestedIndex = (JSON.parse(message.data)).index;
                 let requestedBlock = chain.getBlock(requestedIndex);
                 if (requestedBlock)
-                    writeMessageToPeerToId(from, MessageType.RECEIVE_NEXT_BLOCK, requestedBlock);
+                    writeMessageToPeerIp(from, MessageType.RECEIVE_NEXT_BLOCK, requestedBlock);
                 else
                     console.log('No block found @ index: ' + requestedIndex);
+                break;
+            case MessageType.REQUEST_PEERS:
+                writeMessageToPeerIp(from, MessageType.RECEIVE_NEXT_BLOCK, peers);
+                break;
+            case MessageType.RECEIVE_PEERS:
+                let receivedPeers = JSON.parse(JSON.stringify(message.data));
+                for (let i = 0; i < receivedPeers.length; i++) {
+                    let peer = receivedPeers[i];
+                    if(peers.indexOf(peer) < 0){
+                        peers.push(peer);
+                    }
+                }
                 break;
             case MessageType.RECEIVE_NEXT_BLOCK:
                 chain.addBlock(JSON.parse(JSON.stringify(message.data)));
@@ -132,13 +145,13 @@ function writeMessageToPeers(type, data) {
     })
 };
 
-function writeMessageToPeerToId(toId, type, data) {
-    peers.filter(id == toId).forEach(id => {
+function writeMessageToPeerIp(toIp, type, data) {
+    peers.filter(ip == toIp).forEach(ip => {
         console.log('-------- writeMessageToPeerToId start -------- ');
-        console.log('type: ' + type + ', to: ' + toId);
+        console.log('type: ' + type + ', to: ' + toIp);
         console.log('data: ' + JSON.stringify(data));
         console.log('-------- writeMessageToPeerToId end ----------- ');
-        sendMessage(type, JSON.stringify(data), id);
+        sendMessage(type, JSON.stringify(data), ip);
     }
     );
 };

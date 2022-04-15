@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 let BlockChain = require("./chain").BlockChain;
 let Wallet = require('./wallet').Wallet;
 const net = require('net');
+const Peers = require('./peers').Peers;
 
 
 let chunks = [];
@@ -19,12 +20,13 @@ let MessageType = {
     RECEIVE_PEERS: 'receivePeers'
 };
 
-let peers = [];
+
 
 const myPeerId = crypto.randomBytes(32);
 const peerId = myPeerId.toString('hex');
 let chain = new BlockChain(2, 1000, peerId);
 let myWallet = new Wallet(peerId);
+let peers = new Peers();
 console.log('myPeerId: ' + peerId);
 
 let initHttpServer = (port) => {
@@ -44,7 +46,7 @@ let initHttpServer = (port) => {
 
 (async () => {
     const port = await getPort();
-    peers.push('127.0.0.1');
+    peers.addPeer('127.0.0.1');
     const server = net.createServer((socket) => {
         socket.pipe(socket);
     }).on('error', (err) => {
@@ -99,34 +101,27 @@ let initHttpServer = (port) => {
                     console.log('No block found @ index: ' + requestedIndex);
                 break;
             case MessageType.REQUEST_PEERS:
-                writeMessageToPeerIp(from, MessageType.RECEIVE_NEXT_BLOCK, peers);
+                writeMessageToPeerIp(from, MessageType.RECEIVE_NEXT_BLOCK, peers.getPeers());
                 break;
             case MessageType.RECEIVE_PEERS:
                 let receivedPeers = JSON.parse(JSON.stringify(message.data));
-                for (let i = 0; i < receivedPeers.length; i++) {
-                    let peer = receivedPeers[i];
-                    if(peers.indexOf(peer) < 0){
-                        peers.push(peer);
-                    }
-                }
+                peers.mergePeers(receivedPeers);
                 break;
             case MessageType.RECEIVE_NEXT_BLOCK:
                 chain.addBlock(JSON.parse(JSON.stringify(message.data)));
-                console.log(JSON.stringify(chain.blockchain));
                 let nextBlockIndex = chain.getLatestBlock().index + 1;
-                console.log('-- request next block @ index: ' + nextBlockIndex);
                 writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: nextBlockIndex });
                 break;
             case MessageType.RECEIVE_TRANSACTION:
                 const trx = message.data;
                 chain.addTrx(JSON.parse(trx));
-                console.log(JSON.stringify(chain.blockchain));
                 break;
             case MessageType.RECEIVE_NEW_BLOCK:
                 chain.addBlock(JSON.parse(JSON.stringify(message.data)));
-                console.log(JSON.stringify(chain.blockchain));
                 break;
-        }
+        };
+
+        console.log('Blockchain: ' + JSON.stringify(chain.blockchain));
     }
 })();
 

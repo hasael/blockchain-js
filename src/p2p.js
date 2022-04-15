@@ -9,9 +9,6 @@ let Wallet = require('./wallet').Wallet;
 const net = require('net');
 const Peers = require('./peers').Peers;
 
-
-let chunks = [];
-
 let MessageType = {
     REQUEST_BLOCK: 'requestBlock',
     RECEIVE_NEXT_BLOCK: 'receiveNextBlock',
@@ -24,10 +21,12 @@ let MessageType = {
 
 const myPeerId = crypto.randomBytes(32);
 const peerId = myPeerId.toString('hex');
+console.log('myPeerId: ' + peerId);
+
 let chain = new BlockChain(2, 1000, peerId);
 let myWallet = new Wallet(peerId);
 let peers = new Peers();
-console.log('myPeerId: ' + peerId);
+
 
 let initHttpServer = (port) => {
     let http_port = '80' + port.toString().slice(-2);
@@ -45,8 +44,9 @@ let initHttpServer = (port) => {
 };
 
 (async () => {
-    const port = await getPort();
-    peers.addPeer('127.0.0.1');
+    //peers.addPeer('127.0.0.1');
+    const port = await getPort({port: 30083});
+    
     const server = net.createServer((socket) => {
         socket.pipe(socket);
     }).on('error', (err) => {
@@ -122,6 +122,7 @@ let initHttpServer = (port) => {
         };
 
         console.log('Blockchain: ' + JSON.stringify(chain.blockchain));
+        console.log('peers: ' + peers.getPeers());
     }
 })();
 
@@ -131,7 +132,7 @@ function createTransaction(trx) {
 }
 
 function writeMessageToPeers(type, data) {
-    peers.forEach(id => {
+    peers.getPeers().forEach(id => {
         console.log('-------- writeMessageToPeers start -------- ');
         console.log('type: ' + type + ', to: ' + id);
         console.log('data: ' + JSON.stringify(data));
@@ -141,7 +142,7 @@ function writeMessageToPeers(type, data) {
 };
 
 function writeMessageToPeerIp(toIp, type, data) {
-    peers.filter(ip == toIp).forEach(ip => {
+    peers.getPeers().filter(ip == toIp).forEach(ip => {
         console.log('-------- writeMessageToPeerToId start -------- ');
         console.log('type: ' + type + ', to: ' + toIp);
         console.log('data: ' + JSON.stringify(data));
@@ -160,7 +161,6 @@ function sendMessage(type, data, nodeIp) {
         }
     );
 
-    chunks.push(msg);
     let writeSocket = net.connect({
         host: nodeIp,
         port: 30080,

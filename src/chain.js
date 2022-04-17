@@ -166,7 +166,10 @@ exports.BlockChain = class BlockChain {
 
 let createDb = (peerId) => {
     let dir = __dirname + '/db/' + peerId;
-    if (!fs.existsSync(dir)) {
+    if (!fs.existsSync(__dirname + '/db/')) {
+        fs.mkdirSync( __dirname + '/db/'); 
+    }
+    if (!fs.existsSync(dir)) { 
         fs.mkdirSync(dir);
     }
     db = level(dir);

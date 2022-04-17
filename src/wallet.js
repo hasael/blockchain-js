@@ -10,6 +10,7 @@ exports.Wallet = class Wallet {
     constructor(peerId) {
         let dir = __dirname + '/wallet/' + peerId;
         if (!fs.existsSync(dir)) {
+            fs.mkdirSync( __dirname + '/wallet/' );
             fs.mkdirSync(dir);
         }
         this.privateKeyLocation = dir + '/private.key';

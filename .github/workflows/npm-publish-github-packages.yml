@@ -19,10 +19,11 @@ jobs:
           node-version: 16
       - run: npm ci
         working-directory: ./src
-      - run: npm test
-        working-directory: ./src
+#      - run: npm test
+#        working-directory: ./src
 
   publish:
+    needs: build
     runs-on: ubuntu-latest
     steps:
     -

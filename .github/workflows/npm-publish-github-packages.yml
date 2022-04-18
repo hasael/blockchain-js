@@ -43,6 +43,5 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         platforms: linux/armhf
-        file: ./src/Dockerfile
         push: true
         tags: elmanhasa/blockchain-js:latest

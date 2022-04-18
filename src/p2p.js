@@ -44,7 +44,8 @@ let initHttpServer = (port) => {
 };
 
 (async () => {
-    //peers.addPeer('127.0.0.1');
+   // peers.addPeer('172.18.0.2');
+   // peers.addPeer('172.18.0.3');
     const port = await getPort({port: 30083});
     
     const server = net.createServer((socket) => {
@@ -56,7 +57,7 @@ let initHttpServer = (port) => {
 
     server.listen({
         host: 'localhost',
-        port: 30080,
+        port: 30083,
         exclusive: true
     });
 
@@ -132,6 +133,7 @@ function createTransaction(trx) {
 }
 
 function writeMessageToPeers(type, data) {
+    console.log('peers: ' + peers);
     peers.getPeers().forEach(id => {
         console.log('-------- writeMessageToPeers start -------- ');
         console.log('type: ' + type + ', to: ' + id);
@@ -163,7 +165,7 @@ function sendMessage(type, data, nodeIp) {
 
     let writeSocket = net.connect({
         host: nodeIp,
-        port: 30080,
+        port: 30083,
         writable: true,
     });
 
@@ -192,9 +194,11 @@ const job = new CronJob('30 * * * * *', function () {
     console.log('-----------create next block -----------------');
 
 });
-job.start();
+//job.start();
 
 
-new CronJob('20 * * * * *', function () {
+const updateJob = new CronJob('20 * * * * *', function () {
     writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: chain.getLatestBlock().index + 1 });
-}).start();
+});
+
+updateJob.start();

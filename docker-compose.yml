@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+  first_node:
+    container_name: first_node
+    restart: always
+    build:
+      context: src
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+
+
+  second_node:
+    container_name: second_node
+    restart: always
+    build:
+      context: src
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+
+
+networks:
+  block_data:
+    driver: bridge

@@ -7,6 +7,6 @@ RUN npm install --production --silent && mv node_modules ../
 EXPOSE 8083
 EXPOSE 30083
 RUN chown -R node /usr/src
-USER node
+#USER node
 CMD ["npm", "start"]
 #CMD ["/bin/sh", "-c", "--" , "while true; do sleep 30; done;"]

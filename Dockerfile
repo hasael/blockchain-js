@@ -1,7 +1,7 @@
 FROM arm64v8/node:lts-alpine
 ENV NODE_ENV=production
 WORKDIR /usr/src/
-COPY ["./src/package.json", "./src/package-lock.json*", "./src/npm-shrinkwrap.json*", "./"]
+#COPY ["./src/package.json", "./src/package-lock.json*", "./src/npm-shrinkwrap.json*", "./"]
 #RUN npm install --production --silent && mv node_modules ../
 COPY . .
 #EXPOSE 8083

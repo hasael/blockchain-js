@@ -19,6 +19,7 @@ spec:
     spec:
       containers:
       - image: elmanhasa/blockchain-js:latest
+        imagePullPolicy: Always
         name: blockchain
         resources: {}
 status: {}

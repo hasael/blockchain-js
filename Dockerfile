@@ -4,9 +4,9 @@ WORKDIR /usr
 COPY ["./src/package.json", "./src/package-lock.json*", "./src/npm-shrinkwrap.json*", "./"]
 RUN npm install --production --silent && mv node_modules ../
 COPY . .
-#EXPOSE 8083
-#EXPOSE 30083
-#RUN chown -R node /usr/src
-#USER node
-#CMD ["npm", "start"]
-CMD ["/bin/sh", "-c", "--" , "while true; do sleep 30; done;"]
+EXPOSE 8083
+EXPOSE 30083
+RUN chown -R node /usr/src
+USER node
+CMD ["npm", "start"]
+#CMD ["/bin/sh", "-c", "--" , "while true; do sleep 30; done;"]

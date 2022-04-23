@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: blockchain
+  name: blockchain
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blockchain
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: blockchain
+    spec:
+      containers:
+      - image: elmanhasa/blockchain-js:latest
+        name: blockchain
+        resources: {}
+status: {}

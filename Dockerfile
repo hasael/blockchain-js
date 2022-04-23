@@ -9,4 +9,4 @@ COPY . .
 #RUN chown -R node /usr/src
 #USER node
 #CMD ["npm", "start"]
-CMD ["/bin/bash"]
+CMD ["/bin/sh"]

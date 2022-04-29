@@ -25,18 +25,21 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: blockchainservice
 spec:
   type: ClusterIP
   ports:
     - targetPort: 30083
       port: 30083
+      name: tcp
     - targetPort: 8083
       port: 8083
+      name: http
   selector:
     app: blockchain
 ---
 apiVersion: apps/v1
-kind: Deployment2
+kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
@@ -62,12 +65,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: blockchain2service
 spec:
   type: ClusterIP
   ports:
     - targetPort: 30083
       port: 30083
+      name: tcp
     - targetPort: 8083
       port: 8083
+      name: http
   selector:
     app: blockchain2

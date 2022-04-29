@@ -133,7 +133,7 @@ function createTransaction(trx) {
 }
 
 function writeMessageToPeers(type, data) {
-    console.log('peers: ' + peers);
+    console.log('peers: ' + peers.getPeers());
     peers.getPeers().forEach(id => {
         console.log('-------- writeMessageToPeers start -------- ');
         console.log('type: ' + type + ', to: ' + id);

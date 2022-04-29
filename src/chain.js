@@ -30,6 +30,7 @@ exports.BlockChain = class BlockChain {
         let prevBlock = this.getLatestBlock();
         if (prevBlock.index < newBlock.index && newBlock.blockHeader.previousBlockHeader === prevBlock.blockHeader.merkleRoot) {
             if (validateBlock(newBlock, this.getBlock(newBlock.index - 1))) {
+                console.log('--- Inserting block index: ' + newBlock.index);
                 //storeBlock(newBlock);
                 this.blockchain.push(newBlock);
                 if (newBlock.blockHeader.time > this.lastBlockMinedTime) {
@@ -200,7 +201,6 @@ let storeBlock = (newBlock) => {
     if (db) {
         db.put(newBlock.index, JSON.stringify(newBlock), function (err) {
             if (err) return console.log('Ooops!', err) // some kind of I/O error
-            console.log('--- Inserting block index: ' + newBlock.index);
         })
     }
 }

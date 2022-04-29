@@ -20,7 +20,7 @@ exports.BlockChain = class BlockChain {
         this.transactions = new SimpleHashTable();
         this.previousTrxInputs = [];
         this.lastBlockMinedTime = 0;
-        createDb(peerId);
+        //createDb(peerId);
 
     }
 
@@ -30,7 +30,7 @@ exports.BlockChain = class BlockChain {
         let prevBlock = this.getLatestBlock();
         if (prevBlock.index < newBlock.index && newBlock.blockHeader.previousBlockHeader === prevBlock.blockHeader.merkleRoot) {
             if (validateBlock(newBlock, this.getBlock(newBlock.index - 1))) {
-                storeBlock(newBlock);
+                //storeBlock(newBlock);
                 this.blockchain.push(newBlock);
                 if (newBlock.blockHeader.time > this.lastBlockMinedTime) {
                     this.lastBlockMinedTime = newBlock.blockHeader.time;

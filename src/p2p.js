@@ -169,7 +169,10 @@ function sendMessage(type, data, nodeIp) {
             port: 30083,
             writable: true,
         });
-
+        writeSocket.on('error', function (ex) {
+            console.log("handled error");
+            console.log(ex);
+        });
 
         if (writeSocket) {
             writeSocket.write(msg + '<end>');

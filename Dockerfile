@@ -9,4 +9,4 @@ FROM arm64v8/node:lts-alpine
 #RUN chown -R node /usr/src
 ##USER node
 #CMD ["npm", "start"]
-CMD ["/bin/sh", "-c", "--" , "while true; do sleep 30; done;"]
+CMD ["/bin/sh", "-c", "--" , "while true; do sleep 300; done;"]

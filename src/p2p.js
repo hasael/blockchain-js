@@ -177,7 +177,7 @@ function sendMessage(type, data, nodeIp) {
         }
 
     } catch (error) {
-        console.error(error);
+        console.log(error);
     }
 };
 

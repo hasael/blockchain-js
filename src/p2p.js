@@ -44,10 +44,10 @@ let initHttpServer = (port) => {
 };
 
 (async () => {
-   peers.addPeer('10.42.2.215');
-   // peers.addPeer('172.18.0.3');
-    const port = await getPort({port: 30083});
-    
+    peers.addPeer('10.42.2.215');
+    // peers.addPeer('172.18.0.3');
+    const port = await getPort({ port: 30083 });
+
     const server = net.createServer((socket) => {
         socket.pipe(socket);
     }).on('error', (err) => {
@@ -155,24 +155,29 @@ function writeMessageToPeerIp(toIp, type, data) {
 };
 
 function sendMessage(type, data, nodeIp) {
-    let msg = JSON.stringify(
-        {
-            to: nodeIp,
-            type: type,
-            data: data
+    try {
+        let msg = JSON.stringify(
+            {
+                to: nodeIp,
+                type: type,
+                data: data
+            }
+        );
+
+        let writeSocket = net.connect({
+            host: nodeIp,
+            port: 30083,
+            writable: true,
+        });
+
+
+        if (writeSocket) {
+            writeSocket.write(msg + '<end>');
+            writeSocket.end();
         }
-    );
 
-    let writeSocket = net.connect({
-        host: nodeIp,
-        port: 30083,
-        writable: true,
-    });
-
-
-    if (writeSocket) {
-        writeSocket.write(msg + '<end>');
-        writeSocket.end();
+    } catch (error) {
+        console.error(error);
     }
 };
 

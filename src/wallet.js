@@ -1,4 +1,4 @@
-let fs = require('fs'),
+let //fs = require('fs'),
     EC = require('elliptic').ec,
     trx = require('./transaction'),
     moment = require("moment"),
@@ -8,22 +8,23 @@ const ec = new EC('secp256k1');
 
 exports.Wallet = class Wallet {
     constructor(peerId) {
-        let dir = __dirname + '/wallet/' + peerId;
+        /*let dir = __dirname + '/wallet/' + peerId;
         if (!fs.existsSync(dir)) {
             fs.mkdirSync( __dirname + '/wallet/' );
             fs.mkdirSync(dir);
-        }
-        this.privateKeyLocation = dir + '/private.key';
+        }*/
+        //this.privateKeyLocation = dir + '/private.key';
 
-        let privateKey;
-        if (fs.existsSync(this.privateKeyLocation)) {
+        //let privateKey;
+        /*if (fs.existsSync(this.privateKeyLocation)) {
             const buffer = fs.readFileSync(this.privateKeyLocation, 'utf8');
             privateKey = buffer.toString();
         } else {
             privateKey = generatePrivateKey();
             fs.writeFileSync(this.privateKeyLocation, privateKey);
-        }
-        const key = ec.keyFromPrivate(privateKey, 'hex');
+        }*/
+        this.privateKey = generatePrivateKey();
+        const key = ec.keyFromPrivate(this.privateKey, 'hex');
         this.publicKey = key.getPublic().encode('hex');
     }
 
@@ -51,7 +52,7 @@ exports.Wallet = class Wallet {
         const self = CryptoJS.SHA256(this.publicKey).toString();
         const utxo = filterUtxos(utxos, this.publicKey)[0];
         const balance = this.getBalance(utxos);
-        const privateKey = fs.readFileSync(this.privateKeyLocation).toString('utf-8');
+        const privateKey = this.privateKey; //fs.readFileSync(this.privateKeyLocation).toString('utf-8');
         const key = ec.keyFromPrivate(privateKey, 'hex');
         
         if (value < balance) {

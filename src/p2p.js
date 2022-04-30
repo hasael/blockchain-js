@@ -56,7 +56,6 @@ let initHttpServer = (port) => {
     });
 
     server.listen({
-        host: 'localhost',
         port: 30083,
         exclusive: true
     });

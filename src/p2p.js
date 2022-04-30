@@ -44,7 +44,7 @@ let initHttpServer = (port) => {
 };
 
 (async () => {
-    peers.addPeer('10.42.2.215');
+    peers.addPeer('blockchain2service');
     // peers.addPeer('172.18.0.3');
     const port = await getPort({ port: 30083 });
 

@@ -201,7 +201,7 @@ const job = new CronJob('30 * * * * *', function () {
     console.log('-----------create next block -----------------');
 
 });
-//job.start();
+job.start();
 
 
 const updateJob = new CronJob('20 * * * * *', function () {

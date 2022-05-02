@@ -15,6 +15,12 @@ exports.Peers = class Peers {
         this.peers.push(peer);
     }
 
+    addPeers(peers){
+        peers.array.forEach(element => {
+            this.peers.push(element);
+        });
+    }
+
     mergePeers(receivedPeers){
         for (let i = 0; i < receivedPeers.length; i++) {
             let peer = receivedPeers[i];

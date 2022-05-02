@@ -142,7 +142,7 @@ exports.BlockChain = class BlockChain {
     }
 
     validateChain() {
-        for (let i = 0; i < this.blockchain.length; i++) {
+        for (let i = 1; i < this.blockchain.length; i++) {
             const element = this.blockchain[i];
             if (!validateBlock(element, this.getBlock(i - 1))) {
                 return false;

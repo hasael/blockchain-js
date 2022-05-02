@@ -122,7 +122,7 @@ let initHttpServer = (port) => {
                 break;
             case MessageType.RECEIVE_NEXT_BLOCK:
                 let newBlock = JSON.parse(JSON.stringify(message.data));
-                console.log('Adding received block. Current depth ' + chain.getLatestIndex + message.data);
+                console.log('Adding received block. Current depth ' + chain.getLatestIndex() + message.data);
                 chain.addBlock(newBlock);
                 let nextBlockIndex = chain.getLatestBlock().index + 1;
                 console.log('Requesting block ' + nextBlockIndex);

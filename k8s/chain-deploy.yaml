@@ -58,7 +58,7 @@ spec:
         app: blockchain2
     spec:
       containers:
-      - image: elmanhasa/blockchain-js:latest
+      - image: elmanhasa/blockchain-js:genesis
         imagePullPolicy: Always
         name: blockchain2
 ---

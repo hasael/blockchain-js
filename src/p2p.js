@@ -156,14 +156,14 @@ function writeMessageToPeers(type, data) {
 };
 
 function writeMessageToPeerIp(toIp, type, data) {
-    peers.getPeers().filter(ip == toIp).forEach(ip => {
+    //peers.getPeers().filter(ip == toIp).forEach(ip => {
         console.log('-------- writeMessageToPeerToId start -------- ');
         console.log('type: ' + type + ', to: ' + toIp);
         console.log('data: ' + JSON.stringify(data));
         console.log('-------- writeMessageToPeerToId end ----------- ');
         sendMessage(type, JSON.stringify(data), ip);
-    }
-    );
+    //}
+    //);
 };
 
 function sendMessage(type, data, nodeIp) {

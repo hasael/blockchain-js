@@ -1,4 +1,5 @@
 FROM arm64v8/node:lts-alpine
+ENV NODE_ENV=genesis
 COPY . /usr
 WORKDIR /usr/src
 COPY ["./src/package.json", "./src/package-lock.json*", "./src/npm-shrinkwrap.json*", "./"]

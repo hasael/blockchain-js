@@ -12,8 +12,13 @@ let Block = require("./block.js").Block,
     db;
 
 exports.BlockChain = class BlockChain {
-    constructor(difficulty, mineTimeout, peerId) {
-        this.blockchain = [getGenesisBlock()];
+    constructor(difficulty, mineTimeout, peerId, isGenesis) {
+        if (isGenesis) {
+            this.blockchain = [getGenesisBlock()];
+        } else {
+            this.blockchain = [];
+        }
+
         this.difficulty = difficulty;
         this.mineTimeout = mineTimeout;
         this.utxos = new SimpleHashTable();
@@ -25,21 +30,26 @@ exports.BlockChain = class BlockChain {
     }
 
     getLatestBlock() { return this.blockchain[this.blockchain.length - 1] };
+    getLatestIndex() { return this.blockchain.length };
 
     addBlock(newBlock) {
-        let prevBlock = this.getLatestBlock();
-        if (prevBlock.index < newBlock.index && newBlock.blockHeader.previousBlockHeader === prevBlock.blockHeader.merkleRoot) {
-            if (validateBlock(newBlock, this.getBlock(newBlock.index - 1))) {
-                console.log('--- Inserting block index: ' + newBlock.index);
-                //storeBlock(newBlock);
-                this.blockchain.push(newBlock);
-                if (newBlock.blockHeader.time > this.lastBlockMinedTime) {
-                    this.lastBlockMinedTime = newBlock.blockHeader.time;
+        if (this.getLatestIndex() > 0) {
+            let prevBlock = this.getLatestBlock();
+            if (prevBlock.index < newBlock.index && newBlock.blockHeader.previousBlockHeader === prevBlock.blockHeader.merkleRoot) {
+                if (validateBlock(newBlock, this.getBlock(newBlock.index - 1))) {
+                    console.log('--- Inserting block index: ' + newBlock.index);
+                    //storeBlock(newBlock);
+                    this.blockchain.push(newBlock);
+
+                }
+                else {
+                    console.log('Invalid block: ' + JSON.stringify(newBlock));
                 }
             }
-            else {
-                console.log('Invalid block: ' + JSON.stringify(newBlock));
-            }
+        }
+        else {
+            this.blockchain.push(newBlock);
+
         }
     }
     getBlock(index) {
@@ -118,6 +128,9 @@ exports.BlockChain = class BlockChain {
 
                 const blockHeader = new BlockHeader(1, prevMerkleRoot, nextMerkleRoot, nextTime, null, nounce);
                 const newBlock = new Block(blockHeader, nextIndex, txns);
+                if (newBlock.blockHeader.time > this.lastBlockMinedTime) {
+                    this.lastBlockMinedTime = newBlock.blockHeader.time;
+                }
                 return newBlock;
             }
             else {
@@ -168,9 +181,9 @@ exports.BlockChain = class BlockChain {
 let createDb = (peerId) => {
     let dir = __dirname + '/db/' + peerId;
     if (!fs.existsSync(__dirname + '/db/')) {
-        fs.mkdirSync( __dirname + '/db/'); 
+        fs.mkdirSync(__dirname + '/db/');
     }
-    if (!fs.existsSync(dir)) { 
+    if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
     db = level(dir);

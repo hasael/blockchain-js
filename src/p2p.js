@@ -8,6 +8,8 @@ let BlockChain = require("./chain").BlockChain;
 let Wallet = require('./wallet').Wallet;
 const net = require('net');
 const Peers = require('./peers').Peers;
+const config = require('config');
+const confPeers = config.get('peers');
 
 let MessageType = {
     REQUEST_BLOCK: 'requestBlock',
@@ -23,10 +25,11 @@ const myPeerId = crypto.randomBytes(32);
 const peerId = myPeerId.toString('hex');
 console.log('myPeerId: ' + peerId);
 
-let chain = new BlockChain(2, 1000, peerId);
+
 let myWallet = new Wallet(peerId);
 let peers = new Peers();
-
+let isGenesisPeers = false;
+let chain;
 
 let initHttpServer = (port) => {
     let http_port = '80' + port.toString().slice(-2);
@@ -44,8 +47,14 @@ let initHttpServer = (port) => {
 };
 
 (async () => {
-    peers.addPeer('blockchain2service');
+    //peers.addPeer('blockchain2service');
     // peers.addPeer('172.18.0.3');
+    peers.addPeer(confPeers);
+    if (peers.getPeers().length <= 0) {
+        isGenesisPeers = true;
+        console.log("Starting genesis peer...")
+    }
+    chain = new BlockChain(2, 1000, peerId, isGenesisPeers);
     const port = await getPort({ port: 30083 });
 
     const server = net.createServer((socket) => {
@@ -205,7 +214,7 @@ job.start();
 
 
 const updateJob = new CronJob('20 * * * * *', function () {
-    writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: chain.getLatestBlock().index + 1 });
+    writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: chain.getLatestIndex() + 1 });
 });
 
 updateJob.start();

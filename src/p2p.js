@@ -49,7 +49,7 @@ let initHttpServer = (port) => {
 (async () => {
     //peers.addPeer('blockchain2service');
     // peers.addPeer('172.18.0.3');
-    if (confPeers.length > 0) {
+    if (confPeers) {
         peers.addPeer(confPeers);
     }
     console.log('config peers. Lenthg: ' + peers.getPeers().length + '. ' + confPeers);

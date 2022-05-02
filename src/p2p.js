@@ -51,7 +51,7 @@ let initHttpServer = (port) => {
     // peers.addPeer('172.18.0.3');
     console.log('config peers. Before Length: ' + peers.getPeers().length);
     if (confPeers) {
-        peers.addPeer(confPeers);
+        peers.addPeers(confPeers);
     }
     console.log('config peers. Length: ' + peers.getPeers().length + '. ' + confPeers);
     if (peers.getPeers().length <= 0) {

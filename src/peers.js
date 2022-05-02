@@ -16,7 +16,7 @@ exports.Peers = class Peers {
     }
 
     addPeers(peers){
-        peers.array.forEach(element => {
+        peers.forEach(element => {
             this.peers.push(element);
         });
     }

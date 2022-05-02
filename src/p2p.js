@@ -161,7 +161,7 @@ function writeMessageToPeerIp(toIp, type, data) {
         console.log('type: ' + type + ', to: ' + toIp);
         console.log('data: ' + JSON.stringify(data));
         console.log('-------- writeMessageToPeerToId end ----------- ');
-        sendMessage(type, JSON.stringify(data), ip);
+        sendMessage(type, JSON.stringify(data), toIp);
     //}
     //);
 };

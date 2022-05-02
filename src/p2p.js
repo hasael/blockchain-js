@@ -218,7 +218,7 @@ job.start();
 
 
 const updateJob = new CronJob('20 * * * * *', function () {
-    writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: chain.getLatestIndex() + 1 });
+    writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: chain.getLatestIndex() });
 });
 
 updateJob.start();

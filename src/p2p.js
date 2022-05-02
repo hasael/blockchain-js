@@ -121,8 +121,11 @@ let initHttpServer = (port) => {
                 peers.mergePeers(receivedPeers);
                 break;
             case MessageType.RECEIVE_NEXT_BLOCK:
-                chain.addBlock(JSON.parse(JSON.stringify(message.data)));
+                let newBlock = JSON.parse(JSON.stringify(message.data));
+                console.log('Adding received block. Current depth ' + chain.getLatestIndex + message.data);
+                chain.addBlock(newBlock);
                 let nextBlockIndex = chain.getLatestBlock().index + 1;
+                console.log('Requesting block ' + nextBlockIndex);
                 writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: nextBlockIndex });
                 break;
             case MessageType.RECEIVE_TRANSACTION:

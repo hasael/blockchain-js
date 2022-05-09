@@ -121,9 +121,9 @@ let initHttpServer = (port) => {
                 break;
             case MessageType.RECEIVE_NEXT_BLOCK:
                 let newBlock = JSON.parse(JSON.stringify(message.data));
-                console.log('Adding received block. Current depth ' + chain.getLatestIndex() + message.data);
                 chain.addBlock(newBlock);
-                let nextBlockIndex = chain.getLatestBlock().index + 1;
+                console.log('Adding received block. Current depth ' + chain.getLatestIndex() + message.data);
+                let nextBlockIndex = chain.getLatestIndex();
                 console.log('Requesting block ' + nextBlockIndex);
                 writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: nextBlockIndex });
                 break;
@@ -135,7 +135,6 @@ let initHttpServer = (port) => {
                 chain.addBlock(JSON.parse(JSON.stringify(message.data)));
                 break;
         };
-        console.dir(JSON.stringify(chain.blockchain));
         console.log('Blockchain: ' + JSON.stringify(chain.blockchain, undefined, 4));
         console.log('peers: ' + peers.getPeers());
     }
@@ -212,8 +211,8 @@ const job = new CronJob('30 * * * * *', function () {
     else {
         console.log('Cannot mine block yet!')
     }
-    console.log(JSON.stringify(chain.blockchain));
-    console.log('-----------create next block -----------------');
+    console.log(JSON.stringify(chain.blockchain, undefined, 4));
+    console.log('-----------create next block end -----------------');
 
 });
 job.start();

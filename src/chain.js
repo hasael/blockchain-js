@@ -35,7 +35,9 @@ exports.BlockChain = class BlockChain {
     addBlock(newBlock) {
         if (this.getLatestIndex() > 0) {
             let prevBlock = this.getLatestBlock();
+            console.log('prevBlock: ' + JSON.stringify(prevBlock));
             if (prevBlock.index < newBlock.index && newBlock.blockHeader.previousBlockHeader === prevBlock.blockHeader.merkleRoot) {
+                console.log('Validating block ...');
                 if (validateBlock(newBlock, this.getBlock(newBlock.index - 1))) {
                     console.log('--- Inserting block index: ' + newBlock.index);
                     //storeBlock(newBlock);

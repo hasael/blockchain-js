@@ -6,7 +6,7 @@ metadata:
     app: blockchain
   name: blockchain
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: blockchain
@@ -43,24 +43,24 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: blockchain2
-  name: blockchain2
+    app: genesisblock
+  name: genesisblock
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: blockchain2
+      app: genesisblock
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: blockchain2
+        app: genesisblock
     spec:
       containers:
       - image: elmanhasa/blockchain-js:genesis
         imagePullPolicy: Always
-        name: blockchain2
+        name: genesisblock
 ---
 apiVersion: v1
 kind: Service
@@ -76,4 +76,4 @@ spec:
       port: 8083
       name: http
   selector:
-    app: blockchain2
+    app: genesisblock

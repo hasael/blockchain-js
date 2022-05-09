@@ -7,24 +7,26 @@ exports.Peers = class Peers {
         this.peers = [];
     }
 
-    getPeers(){
+    getPeers() {
         return this.peers;
     }
 
-    addPeer(peer){
-        this.peers.push(peer);
+    addPeer(peer) {
+        if (!this.peers.includes(peer)) {
+            this.peers.push(peer);
+        }
     }
 
-    addPeers(peers){
+    addPeers(peers) {
         peers.forEach(element => {
             this.peers.push(element);
         });
     }
 
-    mergePeers(receivedPeers){
+    mergePeers(receivedPeers) {
         for (let i = 0; i < receivedPeers.length; i++) {
             let peer = receivedPeers[i];
-            if(this.peers.indexOf(peer) < 0){
+            if (this.peers.indexOf(peer) < 0) {
                 this.peers.push(peer);
             }
         }

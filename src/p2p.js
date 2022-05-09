@@ -80,7 +80,7 @@ let initHttpServer = (port) => {
     let onRead = (from, data) => {
         let strData = String(data);
         const msgs = strData.split("<end>")
-
+       
         msgs.forEach(message => {
             if (message && message != "") {
                 let msg = null;
@@ -96,6 +96,7 @@ let initHttpServer = (port) => {
                 console.log('----------- Received Message end -------------');
 
                 onMessage(from, msg);
+                peers.addPeer(from);
             }
         });
 
@@ -134,8 +135,8 @@ let initHttpServer = (port) => {
                 chain.addBlock(JSON.parse(JSON.stringify(message.data)));
                 break;
         };
-
-        console.log('Blockchain: ' + JSON.stringify(chain.blockchain));
+        console.dir(JSON.stringify(chain.blockchain));
+        console.log('Blockchain: ' + JSON.stringify(chain.blockchain, undefined, 4));
         console.log('peers: ' + peers.getPeers());
     }
 })();

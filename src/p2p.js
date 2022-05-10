@@ -43,6 +43,13 @@ let initHttpServer = (port) => {
     app.get('/getWallet', (req, res) => {
         res.send(myWallet.publicKey);
     });
+    app.post('/trx/:to/:value', (req, res) => {
+        let to = req.params.to;
+        let value = req.params.value;
+        let trx = myWallet.createTrx(to,value, chain.utxos);
+        createTransaction(trx);
+        res.send(myWallet.publicKey);
+    });
     app.listen(http_port, () => console.log('Listening http on port: ' + http_port));
 };
 
@@ -158,14 +165,11 @@ function writeMessageToPeers(type, data) {
 };
 
 function writeMessageToPeerIp(toIp, type, data) {
-    //peers.getPeers().filter(ip == toIp).forEach(ip => {
     console.log('-------- writeMessageToPeerToId start -------- ');
     console.log('type: ' + type + ', to: ' + toIp);
     console.log('data: ' + JSON.stringify(data));
     console.log('-------- writeMessageToPeerToId end ----------- ');
     sendMessage(type, JSON.stringify(data), toIp);
-    //}
-    //);
 };
 
 function sendMessage(type, data, nodeIp) {

@@ -33,8 +33,8 @@ exports.BlockChain = class BlockChain {
     getLatestIndex() { return this.blockchain.length };
 
     addBlock(newBlock) {
-        console.log('prevBlock: ' + JSON.stringify(newBlock));
-        console.log('prevBlock: ' + newBlock);
+        console.log('newBlock json string: ' + JSON.stringify(newBlock));
+        console.log('newBlock obj: ' + newBlock);
         if (this.getLatestIndex() > 0) {
             let prevBlock = this.getLatestBlock();
             console.log('prevBlock: ' + JSON.stringify(prevBlock));

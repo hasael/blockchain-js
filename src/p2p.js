@@ -116,7 +116,8 @@ let initHttpServer = (port) => {
                 writeMessageToPeerIp(from, MessageType.RECEIVE_PEERS, peers.getPeers());
                 break;
             case MessageType.RECEIVE_PEERS:
-                let receivedPeers = JSON.parse(JSON.stringify(message.data));
+                let receivedPeers = JSON.parse(message.data);
+                console.log('receivedPeers: ' + receivedPeers);
                 peers.mergePeers(receivedPeers);
                 break;
             case MessageType.RECEIVE_NEXT_BLOCK:

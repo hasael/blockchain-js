@@ -36,6 +36,12 @@ exports.BlockChain = class BlockChain {
         if (this.getLatestIndex() > 0) {
             let prevBlock = this.getLatestBlock();
             console.log('prevBlock: ' + JSON.stringify(prevBlock));
+            console.log('prevBlock index: ' + prevBlock.index);
+            console.log('newBlock.index: ' + newBlock.index);
+            console.log('newBlock.blockHeader.previousBlockHeader: ' + newBlock.blockHeader.previousBlockHeader);
+            console.log('prevBlock.blockHeader.merkleRoot: ' + prevBlock.blockHeader.merkleRoot);
+            console.log('prevBlock.index < newBlock.index: ' + prevBlock.index < newBlock.index);
+            console.log('newBlock.blockHeader.previousBlockHeader === prevBlock.blockHeader.merkleRoot: ' + newBlock.blockHeader.previousBlockHeader === prevBlock.blockHeader.merkleRoot);
             if (prevBlock.index < newBlock.index && newBlock.blockHeader.previousBlockHeader === prevBlock.blockHeader.merkleRoot) {
                 console.log('Validating block ...');
                 if (validateBlock(newBlock, this.getBlock(newBlock.index - 1))) {

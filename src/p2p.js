@@ -120,7 +120,7 @@ let initHttpServer = (port) => {
                 peers.mergePeers(receivedPeers);
                 break;
             case MessageType.RECEIVE_NEXT_BLOCK:
-                let newBlock = JSON.parse(JSON.stringify(message.data));
+                let newBlock = JSON.parse(message.data);
                 chain.addBlock(newBlock);
                 console.log('Adding received block. Current depth ' + chain.getLatestIndex() + message.data);
                 let nextBlockIndex = chain.getLatestIndex();

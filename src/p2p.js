@@ -113,7 +113,7 @@ let initHttpServer = (port) => {
                     console.log('No block found @ index: ' + requestedIndex);
                 break;
             case MessageType.REQUEST_PEERS:
-                writeMessageToPeerIp(from, MessageType.RECEIVE_NEXT_BLOCK, peers.getPeers());
+                writeMessageToPeerIp(from, MessageType.RECEIVE_PEERS, peers.getPeers());
                 break;
             case MessageType.RECEIVE_PEERS:
                 let receivedPeers = JSON.parse(JSON.stringify(message.data));
@@ -221,5 +221,10 @@ job.start();
 const updateJob = new CronJob('20 * * * * *', function () {
     writeMessageToPeers(MessageType.REQUEST_BLOCK, { index: chain.getLatestIndex() });
 });
-
 updateJob.start();
+
+const peersJobs = new CronJob('50 * * * * *', function () {
+    writeMessageToPeers(MessageType.REQUEST_PEERS, { });
+});
+peersJobs.start();
+

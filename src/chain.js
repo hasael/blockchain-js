@@ -40,6 +40,9 @@ exports.BlockChain = class BlockChain {
             console.log('prevBlock: ' + JSON.stringify(prevBlock));
             console.log('prevBlock index: ' + prevBlock.index);
             console.log('newBlock.index: ' + newBlock.index);
+            if(!newBlock.index){
+                console.log('newBlock.index: ' + JSON.parse(newBlock).index);
+            }
             console.log('newBlock.blockHeader.previousBlockHeader: ' + newBlock.blockHeader.previousBlockHeader);
             console.log('prevBlock.blockHeader.merkleRoot: ' + prevBlock.blockHeader.merkleRoot);
             console.log('prevBlock.index < newBlock.index: ' + prevBlock.index < newBlock.index);

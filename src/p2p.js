@@ -43,13 +43,16 @@ let initHttpServer = (port) => {
     app.get('/getWallet', (req, res) => {
         res.send(myWallet.publicKey);
     });
+    app.get('/getBalance', (req, res) => {
+        res.send(myWallet.getBalance(chain.utxos));
+    });
     app.post('/trx/:to/:value', (req, res) => {
         let to = req.params.to;
         let value = req.params.value;
         let trx = myWallet.createTrx(to,value, chain.utxos);
         createTransaction(trx[0]);
         createTransaction(trx[1]);
-        res.send(myWallet.publicKey);
+        res.send(trx);
     });
     app.listen(http_port, () => console.log('Listening http on port: ' + http_port));
 };
